@@ -1,0 +1,66 @@
+// This file is part of nand2tetris, as taught in The Hebrew University,
+// and was written by Aviv Yaish, and is published under the Creative 
+// Common Attribution-NonCommercial-ShareAlike 3.0 Unported License 
+// https://creativecommons.org/licenses/by-nc-sa/3.0/
+
+// This chip is an extension of the regular CPU that uses the extended ALU.
+// If instruction[15]==0 or (instruction[14]==1 and instruction[13]==1),
+// the CpuMul behaves exactly the same as the regular CPU.
+// If instruction[15]==1 and instruction[14]==0 the chip will behave as follows:
+//  Instruction  | 12 | 11 | 10 |
+// ______________________________
+// dest=D<<;jump | 0  | 1  | 1  |
+// dest=A<<;jump | 0  | 1  | 0  |
+// dest=M<<;jump | 1  | 1  | 0  |
+// dest=D>>;jump | 0  | 0  | 1  |
+// dest=A>>;jump | 0  | 0  | 0  |
+// dest=M>>;jump | 1  | 0  | 0  |
+
+CHIP CpuMul {
+    IN  inM[16],         // M value input  (M = contents of RAM[A])
+        instruction[16], // Instruction for execution
+        reset;           // Signals whether to re-start the current
+                         // program (reset=1) or continue executing
+                         // the current program (reset=0).
+    OUT outM[16],        // M value output
+        writeM,          // Write into M? 
+        addressM[15],    // Address in data memory (of M)
+        pc[15];          // address of next instruction
+    
+    PARTS:
+    //instruction : 15i 14x 13x 12a 11c 10c 9c 8c 7c 6c 5d 4d 3d 2j 1j 0j
+  
+    Mux16(a=instruction, b=ALUOutput, sel=instruction[15], out=RegAIn);
+
+    // A Register Logic
+    And(a=instruction[15], b=instruction[5], out=LoadA);
+    Not(in=instruction[15], out=AInstruction);
+    Or(a=AInstruction, b=LoadA, out=RegAControl);
+
+    ARegister(in=RegAIn, load=RegAControl, out=RegAOut,out[0..14]=addressM);
+
+    Mux16(a=RegAOut, b=inM, sel=instruction[12], out=ALUY);
+
+    // D Register Logic
+    And(a=instruction[15], b=instruction[4], out=LoadD);
+    DRegister(in=ALUOutput, load=LoadD, out=RegDOut);
+
+    ExtendAlu(x=RegDOut,y=ALUY,instruction=instruction[6..14],out=ALUOutput,out=outM,zr=ZeroControl,ng=NegativeControl);
+
+    // Write to M Logic
+    And(a=instruction[15], b=instruction[3], out=writeM);
+    
+    //Jump Logic
+    And(a=instruction[2], b=NegativeControl, out=J1); // Negative Flag
+    And(a=instruction[1], b=ZeroControl, out=J2); // Zero Flag
+
+    Not(in=NegativeControl, out=NonNegativeControl);
+    Not(in=ZeroControl, out=NonZeroControl);
+    And(a=NonNegativeControl, b=NonZeroControl, out=PositiveControl);
+    And(a=instruction[0], b=PositiveControl, out=J3); // Positive Flag
+    Or(a=J1, b=J2, out=J4);
+    Or(a=J3, b=J4, out=J5);
+    And(a=J5, b=instruction[15], out=JumpControl);
+
+    PC(in=RegAOut, load=JumpControl, inc=true, reset=reset,out[0..14]=pc,out[15]=Holder);
+}

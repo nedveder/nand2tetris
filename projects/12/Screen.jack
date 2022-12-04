@@ -1,0 +1,75 @@
+// This file is part of nand2tetris, as taught in The Hebrew University, and
+// was written by Aviv Yaish. It is an extension to the specifications given
+// [here](https://www.nand2tetris.org) (Shimon Schocken and Noam Nisan, 2017),
+// as allowed by the Creative Common Attribution-NonCommercial-ShareAlike 3.0
+// Unported [License](https://creativecommons.org/licenses/by-nc-sa/3.0/).
+
+/**
+ * A library of functions for displaying graphics on the screen.
+ * The Hack physical screen consists of 256 rows (indexed 0..255, top to bottom)
+ * of 512 pixels each (indexed 0..511, left to right). The top left pixel on 
+ * the screen is indexed (0,0).
+ */
+class Screen {
+        /** Initializes the Screen. */
+        function void init() {
+        }
+
+        /** Erases the entire screen. */
+        function void clearScreen() {
+        }
+
+        /** Sets the current color, to be used for all subsequent drawXXX commands.
+         *    Black is represented by true, white by false. */
+        function void setColor(boolean b) {
+        }
+
+        /** Draws the (x,y) pixel, using the current color. */
+        function void drawPixel(int x, int y) {
+            // For this function, you will need to calculate the value x%16.
+            // It should be calculated quickly without using multiplication or
+            // division, using exactly one basic math/logical operation.
+            // In addition, calculating 16384 + y * 32 + x/16 should not use
+            // division or multiplication.
+            // Pseudocode:
+            // 1. Compute the RAM address where the (x,y) pixel is
+            //    represented: 16384 + (32*y) + (x/16).
+            // 2. Use Memory.peek to get the 16-bit value of this address
+            // 3. Use some bitwise operation to set (only) the bit that corresponds
+            //    to the pixel to the current color.
+            // 4. Use Memory.poke to write the modified 16-bit value to the RAM
+            // address.
+        }
+
+        /** Draws a line from pixel (x1,y1) to pixel (x2,y2), using the current color. */
+        function void drawLine(int x1, int y1, int x2, int y2) {
+            // The case where x1 != x2 and y1 != y2 should be implemented without
+            // multiplication or division.
+            // Pseudocode:
+            // 1. let x = x1, y = y1, a = 0, b = 0, diff = 0
+            // 2. Compute dx and dy
+            // 3. while ((a <= dx) and (b <= dy))
+            // 4.   do drawPixel(x+a, y+b)
+            // 5.   if (diff < 0) { let a=a+1, diff=diff+dy }
+            // 6.   else          { let b=b+1, diff=diff-dx }
+            //
+            // The case where y1 == y2 can be implemented efficiently by
+            // trying to draw as many pixels as possible in a single assignment,
+            // similarly to Fill in project 4.
+        }
+
+        /** Draws a filled rectangle whose top left corner is (x1, y1)
+         * and bottom right corner is (x2,y2), using the current color. */
+        function void drawRectangle(int x1, int y1, int x2, int y2) {
+        }
+
+        /** Draws a filled circle of radius r<=181 around (x,y), using the current color. */
+        function void drawCircle(int x, int y, int r) {
+            // This can be implemented efficiently by drawing multiple lines at
+            // each iteration. You can use multiplication and sqrt.
+            // Pseudocode:
+            // 1. for (dy = -r ... r)
+            // 2.   let halfWidth = sqrt(r*r - dy*dy)
+            // 3.   do drawLine(x-halfWidth, y+dy, x+halfWidth, y+dy)
+        }
+}
