@@ -9,13 +9,13 @@ import re
 import typing
 
 COMMENTS_WHITESPACES_REGEX = re.compile(r'(\s+|//.*?\n|/\*.*?\*/)+')
-TOKEN_REGEX_DICT = {
-    "STRING_CONST": r'"(.*?)"'
-    , "INT_CONST": r'([0-9]+)'
-    , "SYMBOL": r'([{}()[\]\.,;+\-\*/&|<>=~])'
-    , "KEYWORD": r'\b(class|constructor|function|method|field|static|var|int|char|boolean|void|true|false|null|this'
-                 r'|let|do|if|else|while|return)\b '
-    , "IDENTIFIER": r'([a-zA-Z_][a-zA-Z_0-9]*)'
+TOKEN_PATTEN_DICT = {
+    "StringConstant": r'"(.*?)"'
+    , "integerConstant": r'([0-9]+)'
+    , "symbol": r'([{}()[\]\.,;+\-\*/&|<>=~^#])'
+    , "keyword": r'\b(class|constructor|function|method|field|static|var|int|char|boolean|void|true|false|null|this'
+                 r'|let|do|if|else|while|return)\b'
+    , "identifier": r'([a-zA-Z_][a-zA-Z_0-9]*)'
 }
 
 
@@ -111,6 +111,9 @@ class JackTokenizer:
         """
         self._input = input_stream.read()
         self._position: int = 0
+        self.skip_comment_whitespaces()
+        self._token = ""
+        self._token_type = ""
 
     def has_more_tokens(self) -> bool:
         """Do we have more tokens in the input?
@@ -118,16 +121,30 @@ class JackTokenizer:
         Returns:
             bool: True if there are more tokens, False otherwise.
         """
-        # Your code goes here!
-        pass
+        return self._position < len(self._input)
 
     def advance(self) -> None:
         """Gets the next token from the input and makes it the current token. 
         This method should be called if has_more_tokens() is true. 
         Initially there is no current token.
         """
-        # Your code goes here!
-        pass
+        if self.has_more_tokens():
+            for token, pattern in TOKEN_PATTEN_DICT.items():
+                match = re.match(re.compile(pattern), self._input[self._position:])
+                if match:
+                    self._token = match.group(0)
+                    self._token_type = token
+        self._position += len(self._token)
+        self.skip_comment_whitespaces()
+
+    def skip_comment_whitespaces(self):
+        """
+        The program progresses the position pointer for the input so it doesn't read comments or whitespaces.
+        """
+        # Regex matches all whitespaces and comments up to the index where somthing else appears,
+        comments_whitespaces = re.match(COMMENTS_WHITESPACES_REGEX, self._input[self._position:], re.DOTALL)
+        # then progresses position accordingly - group(0) is first match of the pattern
+        self._position += len(comments_whitespaces.group(0)) if comments_whitespaces else 0
 
     def token_type(self) -> str:
         """
@@ -135,65 +152,67 @@ class JackTokenizer:
             str: the type of the current token, can be
             "KEYWORD", "SYMBOL", "IDENTIFIER", "INT_CONST", "STRING_CONST"
         """
-        # Your code goes here!
-        pass
+        return self._token_type
 
-    def keyword(self) -> str:
-        """
-        Returns:
-            str: the keyword which is the current token.
-            Should be called only when token_type() is "KEYWORD".
-            Can return "CLASS", "METHOD", "FUNCTION", "CONSTRUCTOR", "INT", 
-            "BOOLEAN", "CHAR", "VOID", "VAR", "STATIC", "FIELD", "LET", "DO", 
-            "IF", "ELSE", "WHILE", "RETURN", "TRUE", "FALSE", "NULL", "THIS"
-        """
-        # Your code goes here!
-        pass
+    def token(self) -> str:
+        return self._token
 
-    def symbol(self) -> str:
-        """
-        Returns:
-            str: the character which is the current token.
-            Should be called only when token_type() is "SYMBOL".
-            Recall that symbol was defined in the grammar like so:
-            symbol: '{' | '}' | '(' | ')' | '[' | ']' | '.' | ',' | ';' | '+' | 
-              '-' | '*' | '/' | '&' | '|' | '<' | '>' | '=' | '~' | '^' | '#'
-        """
-        # Your code goes here!
-        pass
-
-    def identifier(self) -> str:
-        """
-        Returns:
-            str: the identifier which is the current token.
-            Should be called only when token_type() is "IDENTIFIER".
-            Recall that identifiers were defined in the grammar like so:
-            identifier: A sequence of letters, digits, and underscore ('_') not 
-                  starting with a digit. You can assume keywords cannot be
-                  identifiers, so 'self' cannot be an identifier, etc'.
-        """
-        # Your code goes here!
-        pass
-
-    def int_val(self) -> int:
-        """
-        Returns:
-            str: the integer value of the current token.
-            Should be called only when token_type() is "INT_CONST".
-            Recall that integerConstant was defined in the grammar like so:
-            integerConstant: A decimal number in the range 0-32767.
-        """
-        # Your code goes here!
-        pass
-
-    def string_val(self) -> str:
-        """
-        Returns:
-            str: the string value of the current token, without the double 
-            quotes. Should be called only when token_type() is "STRING_CONST".
-            Recall that StringConstant was defined in the grammar like so:
-            StringConstant: '"' A sequence of Unicode characters not including 
-                      double quote or newline '"'
-        """
-        # Your code goes here!
-        pass
+    # def keyword(self) -> str:
+    #     """
+    #     Returns:
+    #         str: the keyword which is the current token.
+    #         Should be called only when token_type() is "KEYWORD".
+    #         Can return "CLASS", "METHOD", "FUNCTION", "CONSTRUCTOR", "INT",
+    #         "BOOLEAN", "CHAR", "VOID", "VAR", "STATIC", "FIELD", "LET", "DO",
+    #         "IF", "ELSE", "WHILE", "RETURN", "TRUE", "FALSE", "NULL", "THIS"
+    #     """
+    #     # Your code goes here!
+    #     pass
+    #
+    # def symbol(self) -> str:
+    #     """
+    #     Returns:
+    #         str: the character which is the current token.
+    #         Should be called only when token_type() is "SYMBOL".
+    #         Recall that symbol was defined in the grammar like so:
+    #         symbol: '{' | '}' | '(' | ')' | '[' | ']' | '.' | ',' | ';' | '+' |
+    #           '-' | '*' | '/' | '&' | '|' | '<' | '>' | '=' | '~' | '^' | '#'
+    #     """
+    #     # Your code goes here!
+    #     pass
+    #
+    # def identifier(self) -> str:
+    #     """
+    #     Returns:
+    #         str: the identifier which is the current token.
+    #         Should be called only when token_type() is "IDENTIFIER".
+    #         Recall that identifiers were defined in the grammar like so:
+    #         identifier: A sequence of letters, digits, and underscore ('_') not
+    #               starting with a digit. You can assume keywords cannot be
+    #               identifiers, so 'self' cannot be an identifier, etc'.
+    #     """
+    #     # Your code goes here!
+    #     pass
+    #
+    # def int_val(self) -> int:
+    #     """
+    #     Returns:
+    #         str: the integer value of the current token.
+    #         Should be called only when token_type() is "INT_CONST".
+    #         Recall that integerConstant was defined in the grammar like so:
+    #         integerConstant: A decimal number in the range 0-32767.
+    #     """
+    #     # Your code goes here!
+    #     pass
+    #
+    # def string_val(self) -> str:
+    #     """
+    #     Returns:
+    #         str: the string value of the current token, without the double
+    #         quotes. Should be called only when token_type() is "STRING_CONST".
+    #         Recall that StringConstant was defined in the grammar like so:
+    #         StringConstant: '"' A sequence of Unicode characters not including
+    #                   double quote or newline '"'
+    #     """
+    #     # Your code goes here!
+    #     pass
