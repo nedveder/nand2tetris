@@ -8,7 +8,7 @@ Unported [License](https://creativecommons.org/licenses/by-nc-sa/3.0/).
 import re
 import typing
 
-COMMENTS_WHITESPACES_REGEX = re.compile(r'(\s+|//.*?\n|/\*.*?\*/)+')
+COMMENTS_WHITESPACES_REGEX = re.compile(r'(\s+|//.*?\n|/\*.*?\*/)+', re.DOTALL)
 TOKEN_PATTEN_DICT = {
     "StringConstant": r'"(.*?)"'
     , "integerConstant": r'([0-9]+)'
@@ -134,15 +134,16 @@ class JackTokenizer:
                 if match:
                     self._token = match.group(0)
                     self._token_type = token
-        self._position += len(self._token)
-        self.skip_comment_whitespaces()
+                    self._position += len(self._token)
+                    self.skip_comment_whitespaces()
+                    return
 
     def skip_comment_whitespaces(self):
         """
         The program progresses the position pointer for the input so it doesn't read comments or whitespaces.
         """
         # Regex matches all whitespaces and comments up to the index where somthing else appears,
-        comments_whitespaces = re.match(COMMENTS_WHITESPACES_REGEX, self._input[self._position:], re.DOTALL)
+        comments_whitespaces = re.match(COMMENTS_WHITESPACES_REGEX, self._input[self._position:])
         # then progresses position accordingly - group(0) is first match of the pattern
         self._position += len(comments_whitespaces.group(0)) if comments_whitespaces else 0
 
@@ -153,6 +154,14 @@ class JackTokenizer:
             "KEYWORD", "SYMBOL", "IDENTIFIER", "INT_CONST", "STRING_CONST"
         """
         return self._token_type
+
+    def token_output_xml(self) -> str:
+        """
+        Returns:
+            str: the type of the current token, can be
+            "KEYWORD", "SYMBOL", "IDENTIFIER", "INT_CONST", "STRING_CONST"
+        """
+        return f"<{self._token_type}> {self._token} </{self._token_type}>"
 
     def token(self) -> str:
         return self._token
