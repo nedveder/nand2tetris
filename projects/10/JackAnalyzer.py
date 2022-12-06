@@ -21,9 +21,9 @@ def analyze_file(
         output_file (typing.TextIO): writes all output to this file.
     """
     tokenizer = JackTokenizer(input_file)
-    tokenizer.advance()
-    engine = CompilationEngine(tokenizer, output_file)
-    engine.compile_class()
+    compilation_engine = CompilationEngine(tokenizer, output_file)
+    tokenizer.advance()  # Advance first step into code
+    compilation_engine.compile_class()
 
 
 if "__main__" == __name__:
@@ -45,7 +45,7 @@ if "__main__" == __name__:
         filename, extension = os.path.splitext(input_path)
         if extension.lower() != ".jack":
             continue
-        output_path = filename + "_test.xml"
+        output_path = filename + ".xml"
         with open(input_path, 'r') as input_file, \
                 open(output_path, 'w') as output_file:
             analyze_file(input_file, output_file)

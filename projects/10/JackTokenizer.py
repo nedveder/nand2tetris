@@ -161,69 +161,9 @@ class JackTokenizer:
         """
         Returns:
             str: the type of the current token in proper xml format, can be
-            "keyword", "symbol", "identifier", "integerConst", "StringConst"
+            "keyword", "symbol", "identifier", "integerConst", "stringConst"
         """
         return f"<{self._token_type}> {self._token} </{self._token_type}>"
 
     def token(self) -> str:
         return self._token
-
-    # def keyword(self) -> str:
-    #     """
-    #     Returns:
-    #         str: the keyword which is the current token.
-    #         Should be called only when token_type() is "KEYWORD".
-    #         Can return "CLASS", "METHOD", "FUNCTION", "CONSTRUCTOR", "INT",
-    #         "BOOLEAN", "CHAR", "VOID", "VAR", "STATIC", "FIELD", "LET", "DO",
-    #         "IF", "ELSE", "WHILE", "RETURN", "TRUE", "FALSE", "NULL", "THIS"
-    #     """
-    #     # Your code goes here!
-    #     pass
-    #
-    # def symbol(self) -> str:
-    #     """
-    #     Returns:
-    #         str: the character which is the current token.
-    #         Should be called only when token_type() is "SYMBOL".
-    #         Recall that symbol was defined in the grammar like so:
-    #         symbol: '{' | '}' | '(' | ')' | '[' | ']' | '.' | ',' | ';' | '+' |
-    #           '-' | '*' | '/' | '&' | '|' | '<' | '>' | '=' | '~' | '^' | '#'
-    #     """
-    #     # Your code goes here!
-    #     pass
-    #
-    # def identifier(self) -> str:
-    #     """
-    #     Returns:
-    #         str: the identifier which is the current token.
-    #         Should be called only when token_type() is "IDENTIFIER".
-    #         Recall that identifiers were defined in the grammar like so:
-    #         identifier: A sequence of letters, digits, and underscore ('_') not
-    #               starting with a digit. You can assume keywords cannot be
-    #               identifiers, so 'self' cannot be an identifier, etc'.
-    #     """
-    #     # Your code goes here!
-    #     pass
-    #
-    # def int_val(self) -> int:
-    #     """
-    #     Returns:
-    #         str: the integer value of the current token.
-    #         Should be called only when token_type() is "INT_CONST".
-    #         Recall that integerConstant was defined in the grammar like so:
-    #         integerConstant: A decimal number in the range 0-32767.
-    #     """
-    #     # Your code goes here!
-    #     pass
-    #
-    # def string_val(self) -> str:
-    #     """
-    #     Returns:
-    #         str: the string value of the current token, without the double
-    #         quotes. Should be called only when token_type() is "STRING_CONST".
-    #         Recall that StringConstant was defined in the grammar like so:
-    #         StringConstant: '"' A sequence of Unicode characters not including
-    #                   double quote or newline '"'
-    #     """
-    #     # Your code goes here!
-    #     pass

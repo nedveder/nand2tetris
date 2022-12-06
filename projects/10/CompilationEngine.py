@@ -8,7 +8,11 @@ Unported [License](https://creativecommons.org/licenses/by-nc-sa/3.0/).
 import typing
 from JackTokenizer import JackTokenizer
 
-special_chars_dict = {'&': "<symbol> &amp; </symbol>", '<': "<symbol> &lt; </symbol>", '>': "<symbol> &gt; </symbol>"}
+BACK_SLASH = "/"
+
+INITIAL_INDENTATION = 0
+
+SPECIAL_CHARS_DICT = {'&': "<symbol> &amp; </symbol>", '<': "<symbol> &lt; </symbol>", '>': "<symbol> &gt; </symbol>"}
 
 
 class CompilationEngine:
@@ -24,19 +28,29 @@ class CompilationEngine:
         :param output_stream: The output stream.
         """
         self._input = input_stream
-        self._indentation = 0
+        self._indentation = INITIAL_INDENTATION
         self._output = output_stream
 
     def write_token(self):
+        """
+        Writes a single token to XML file - with correct format and indentation
+        """
         indentation = self._indentation * '  '
-        if self._input.token() in special_chars_dict:
-            self._output.write(f"{indentation}{special_chars_dict[self._input.token()]}\n")
+        if self._input.token() in SPECIAL_CHARS_DICT:
+            self._output.write(f"{indentation}{SPECIAL_CHARS_DICT[self._input.token()]}\n")
         else:
             self._output.write(f"{indentation}{self._input.token_output_xml()}\n")
         self._input.advance()
 
     def write_tag(self, tag):
-        if "/" in tag:
+        """
+        Args:
+            tag:
+
+        Returns:
+
+        """
+        if BACK_SLASH in tag:
             self._indentation += -1
             indentation = self._indentation * '  '
             self._output.write(f"{indentation}{tag}\n")
