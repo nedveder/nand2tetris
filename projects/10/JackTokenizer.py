@@ -10,7 +10,7 @@ import typing
 
 COMMENTS_WHITESPACES_REGEX = re.compile(r'(\s+|//.*?\n|/\*.*?\*/)+', re.DOTALL)
 TOKEN_PATTEN_DICT = {
-    "StringConstant": r'"(.*?)"'
+    "stringConstant": r'"(.*?)"'
     , "integerConstant": r'([0-9]+)'
     , "symbol": r'([{}()[\]\.,;+\-\*/&|<>=~^#])'
     , "keyword": r'\b(class|constructor|function|method|field|static|var|int|char|boolean|void|true|false|null|this'
@@ -135,6 +135,8 @@ class JackTokenizer:
                     self._token = match.group(0)
                     self._token_type = token
                     self._position += len(self._token)
+                    if token == "stringConstant":
+                        self._token = self._token[1:-1]
                     self.skip_comment_whitespaces()
                     return
 
@@ -151,15 +153,15 @@ class JackTokenizer:
         """
         Returns:
             str: the type of the current token, can be
-            "KEYWORD", "SYMBOL", "IDENTIFIER", "INT_CONST", "STRING_CONST"
+            "keyword", "symbol", "identifier", "integerConst", "stringConst"
         """
         return self._token_type
 
     def token_output_xml(self) -> str:
         """
         Returns:
-            str: the type of the current token, can be
-            "KEYWORD", "SYMBOL", "IDENTIFIER", "INT_CONST", "STRING_CONST"
+            str: the type of the current token in proper xml format, can be
+            "keyword", "symbol", "identifier", "integerConst", "StringConst"
         """
         return f"<{self._token_type}> {self._token} </{self._token_type}>"
 

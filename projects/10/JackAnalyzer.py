@@ -20,11 +20,10 @@ def analyze_file(
         input_file (typing.TextIO): the file to analyze.
         output_file (typing.TextIO): writes all output to this file.
     """
-    # Your code goes here!
-    # It might be good to start by creating a new JackTokenizer and CompilationEngine:
     tokenizer = JackTokenizer(input_file)
+    tokenizer.advance()
     engine = CompilationEngine(tokenizer, output_file)
-    #TODO
+    engine.compile_class()
 
 
 if "__main__" == __name__:
@@ -33,7 +32,7 @@ if "__main__" == __name__:
     # Both are closed automatically when the code finishes running.
     # If the output file does not exist, it is created automatically in the
     # correct path, using the correct filename.
-    if not len(sys.argv) == 2:
+    if len(sys.argv) != 2:
         sys.exit("Invalid usage, please use: JackAnalyzer <input path>")
     argument_path = os.path.abspath(sys.argv[1])
     if os.path.isdir(argument_path):
@@ -46,7 +45,7 @@ if "__main__" == __name__:
         filename, extension = os.path.splitext(input_path)
         if extension.lower() != ".jack":
             continue
-        output_path = filename + ".xml"
+        output_path = filename + "_test.xml"
         with open(input_path, 'r') as input_file, \
                 open(output_path, 'w') as output_file:
             analyze_file(input_file, output_file)
