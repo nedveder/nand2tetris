@@ -5,13 +5,11 @@ was written by Aviv Yaish. It is an extension to the specifications given
 as allowed by the Creative Common Attribution-NonCommercial-ShareAlike 3.0
 Unported [License](https://creativecommons.org/licenses/by-nc-sa/3.0/).
 """
-import typing
 from JackTokenizer import JackTokenizer
 
+COMMA_SEPERATOR = ","
 BACK_SLASH = "/"
-
 INITIAL_INDENTATION = 0
-
 SPECIAL_CHARS_DICT = {'&': "<symbol> &amp; </symbol>", '<': "<symbol> &lt; </symbol>", '>': "<symbol> &gt; </symbol>"}
 
 
@@ -44,11 +42,10 @@ class CompilationEngine:
 
     def write_tag(self, tag):
         """
-        Args:
-            tag:
-
-        Returns:
-
+        1. If the tag is a backslash, then we need to decrease the indentation by 1.
+        2. We then write the tag to the output file.
+        3. If the tag is not a backslash, then we need to increase the indentation by 1.
+        4. We then write the tag to the output file.
         """
         if BACK_SLASH in tag:
             self._indentation += -1
@@ -78,7 +75,7 @@ class CompilationEngine:
         self.write_token()  # var kind name
         self.write_token()  # type
         self.write_token()  # varName
-        while self._input.token() == ",":
+        while self._input.token() == COMMA_SEPERATOR:
             self.write_token()  # ,
             self.write_token()  # varName
         self.write_token()  # ;
@@ -120,7 +117,7 @@ class CompilationEngine:
         if self._input.token() in ["int", "char", "boolean"] or self._input.token_type() == "identifier":
             self.write_token()  # type
             self.write_token()  # varName
-            while self._input.token() == ",":
+            while self._input.token() == COMMA_SEPERATOR:
                 self.write_token()  # ,
                 self.write_token()  # type
                 self.write_token()  # varName
@@ -132,7 +129,7 @@ class CompilationEngine:
         self.write_token()  # var
         self.write_token()  # type
         self.write_token()  # varName
-        while self._input.token() == ",":
+        while self._input.token() == COMMA_SEPERATOR:
             self.write_token()  # ,
             self.write_token()  # varName
         self.write_token()  # ;

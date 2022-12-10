@@ -45,7 +45,7 @@ if "__main__" == __name__:
         filename, extension = os.path.splitext(input_path)
         if extension.lower() != ".jack":
             continue
-        output_path = filename + ".xml"
+        output_path = filename + "_test.xml"
         with open(input_path, 'r') as input_file, \
                 open(output_path, 'w') as output_file:
             analyze_file(input_file, output_file)

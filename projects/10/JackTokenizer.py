@@ -8,7 +8,9 @@ Unported [License](https://creativecommons.org/licenses/by-nc-sa/3.0/).
 import re
 import typing
 
-COMMENTS_WHITESPACES_REGEX = re.compile(r'(\s+|//.*?\n|/\*.*?\*/)+', re.DOTALL)
+# The regex matches all whitespaces, all comments starting with // and all comments starting with /* and ending with */.
+COMMENTS_WHITESPACES_REGEX = re.compile(r'(\s+|//[^\n]*|/\*.*?\*/)+', re.DOTALL)
+# Each item contains regex pattern for specific type of token being parsed
 TOKEN_PATTEN_DICT = {
     "stringConstant": r'"(.*?)"'
     , "integerConstant": r'([0-9]+)'
@@ -104,10 +106,8 @@ class JackTokenizer:
     """
 
     def __init__(self, input_stream: typing.TextIO) -> None:
-        """Opens the input stream and gets ready to tokenize it.
-
-        Args:
-            input_stream (typing.TextIO): input stream.
+        """It receives a file and reads it into a string.
+        It also initializes the position pointer to 0.
         """
         self._input = input_stream.read()
         self._position: int = 0
@@ -116,33 +116,40 @@ class JackTokenizer:
         self._token_type = ""
 
     def has_more_tokens(self) -> bool:
-        """Do we have more tokens in the input?
-
-        Returns:
-            bool: True if there are more tokens, False otherwise.
+        """
+        Returns True if there are more tokens in the input.
         """
         return self._position < len(self._input)
 
     def advance(self) -> None:
-        """Gets the next token from the input and makes it the current token. 
-        This method should be called if has_more_tokens() is true. 
+        """Gets the next token from the input and makes it the current token.
+        This method should be called only if has_more_tokens() is true.
         Initially there is no current token.
         """
-        if self.has_more_tokens():
-            for token, pattern in TOKEN_PATTEN_DICT.items():
-                match = re.match(re.compile(pattern), self._input[self._position:])
-                if match:
-                    self._token = match.group(0)
-                    self._token_type = token
-                    self._position += len(self._token)
-                    if token == "stringConstant":
-                        self._token = self._token[1:-1]
-                    self.skip_comment_whitespaces()
-                    return
+        if not self.has_more_tokens():
+            return
+        for token, pattern in TOKEN_PATTEN_DICT.items():
+            match = re.match(re.compile(pattern), self._input[self._position:])
+            if match:
+                self.tokenize(match, token)
+                return
+
+    def tokenize(self, match, token):
+        """
+        Tokenizes the current match string and the selected token
+        """
+        self._token = match.group(0)
+        self._token_type = token
+        self._position += len(self._token)
+        if token == "stringConstant":
+            self._token = self._token[1:-1]
+        self.skip_comment_whitespaces()
 
     def skip_comment_whitespaces(self):
         """
         The program progresses the position pointer for the input so it doesn't read comments or whitespaces.
+        The regex matches all whitespaces and comments up to the index where somthing else appears,
+        then progresses position accordingly - group(0) is first match of the pattern.
         """
         # Regex matches all whitespaces and comments up to the index where somthing else appears,
         comments_whitespaces = re.match(COMMENTS_WHITESPACES_REGEX, self._input[self._position:])
