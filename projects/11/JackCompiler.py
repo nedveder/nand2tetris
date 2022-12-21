@@ -22,10 +22,10 @@ def compile_file(
         input_file (typing.TextIO): the file to compile.
         output_file (typing.TextIO): writes all output to this file.
     """
-    # Your code goes here!
-    # This function should be relatively similar to "analyze_file" in
-    # JackAnalyzer.py from the previous project.
-    pass
+    tokenizer = JackTokenizer(input_file)
+    compilation_engine = CompilationEngine(tokenizer, output_file)
+    tokenizer.advance()  # Advance first step into code
+    compilation_engine.compile_class()
 
 
 if "__main__" == __name__:
@@ -34,7 +34,7 @@ if "__main__" == __name__:
     # Both are closed automatically when the code finishes running.
     # If the output file does not exist, it is created automatically in the
     # correct path, using the correct filename.
-    if not len(sys.argv) == 2:
+    if len(sys.argv) != 2:
         sys.exit("Invalid usage, please use: JackCompiler <input path>")
     argument_path = os.path.abspath(sys.argv[1])
     if os.path.isdir(argument_path):
