@@ -7,6 +7,11 @@ Unported [License](https://creativecommons.org/licenses/by-nc-sa/3.0/).
 """
 import typing
 
+VAR = "var"
+ARG = "argument"
+FIELD = "field"
+STATIC = "static"
+
 
 class SymbolTable:
     """A symbol table that associates names with information needed for Jack
@@ -18,34 +23,36 @@ class SymbolTable:
         """Creates a new empty symbol table."""
         self._class_symbol_table = dict()
         self._subroutine_symbol_table = dict()
-        self._identifier_counter = {"STATIC": 0, "FIELD": 0, "ARG": 0, "VAR": 0}
+        self._identifier_counter = {STATIC: 0, FIELD: 0, ARG: 0, VAR: 0}
 
     def start_subroutine(self) -> None:
         """Starts a new subroutine scope (i.e., resets the subroutine's 
         symbol table).
         """
         self._subroutine_symbol_table.clear()
-        self._identifier_counter["ARG"] = 0
-        self._identifier_counter["VAR"] = 0
+        self._identifier_counter[ARG] = 0
+        self._identifier_counter[VAR] = 0
 
-    def define(self, name: str, type: str, kind: str) -> None:
+    def define(self, var_name: str, var_type: str, var_kind: str) -> None:
         """Defines a new identifier of a given name, type and kind and assigns 
         it a running index. "STATIC" and "FIELD" identifiers have a class scope, 
         while "ARG" and "VAR" identifiers have a subroutine scope.
 
         Args:
-            name (str): the name of the new identifier.
-            type (str): the type of the new identifier.
-            kind (str): the kind of the new identifier, can be:
+            var_name (str): the name of the new identifier.
+            var_type (str): the type of the new identifier.
+            var_kind (str): the kind of the new identifier, can be:
             "STATIC", "FIELD", "ARG", "VAR".
         """
-        if kind in ["STATIC", "FIELD"]:
-            self._class_symbol_table[name] = [type, kind, self._identifier_counter[kind]]
-        elif kind in ["ARG", "VAR"]:
-            self._subroutine_symbol_table[name] = [type, kind, self._identifier_counter[kind]]
+        if var_name in self._class_symbol_table or var_name in self._subroutine_symbol_table:
+            raise KeyError("Variable exists in symbol table")
+        if var_kind in [STATIC, FIELD]:
+            self._class_symbol_table[var_name] = [var_type, var_kind, self._identifier_counter[var_kind]]
+        elif var_kind in [ARG, VAR]:
+            self._subroutine_symbol_table[var_name] = [var_type, var_kind, self._identifier_counter[var_kind]]
         else:
-            raise TypeError("Kind exception")
-        self._identifier_counter[kind] += 1
+            raise TypeError("Kind exception : not a correct kind")
+        self._identifier_counter[var_kind] += 1
 
     def var_count(self, kind: str) -> int:
         """
@@ -57,6 +64,16 @@ class SymbolTable:
             the current scope.
         """
         return self._identifier_counter[kind]
+
+    def contains(self, name:str)->bool:
+        """
+        Args:
+            name: name of an identifier.
+
+        Returns: true if contained in symbol table else false
+
+        """
+        return name in self._subroutine_symbol_table or name in self._class_symbol_table
 
     def kind_of(self, name: str) -> str:
         """
