@@ -48,6 +48,7 @@ if "__main__" == __name__:
         if extension.lower() != ".jack":
             continue
         output_path = filename + ".vm"
+        #output_path = filename + "_test.vm"
         with open(input_path, 'r') as input_file, \
                 open(output_path, 'w') as output_file:
             compile_file(input_file, output_file)

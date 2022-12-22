@@ -85,9 +85,9 @@ class SymbolTable:
             if the identifier is unknown in the current scope.
         """
         if name in self._subroutine_symbol_table:
-            return self._subroutine_symbol_table[name][0]
+            return self._subroutine_symbol_table[name][1]
         elif name in self._class_symbol_table:
-            return self._class_symbol_table[name][0]
+            return self._class_symbol_table[name][1]
         else:
             raise NameError("Kind Of lookup failed :Symbol doesn't exist in scope")
 
@@ -100,9 +100,9 @@ class SymbolTable:
             str: the type of the named identifier in the current scope.
         """
         if name in self._subroutine_symbol_table:
-            return self._subroutine_symbol_table[name][1]
+            return self._subroutine_symbol_table[name][0]
         elif name in self._class_symbol_table:
-            return self._class_symbol_table[name][1]
+            return self._class_symbol_table[name][0]
         else:
             raise NameError("Type lookup failed :Symbol doesn't exist in scope")
 

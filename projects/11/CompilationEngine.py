@@ -9,6 +9,10 @@ from JackTokenizer import JackTokenizer
 from SymbolTable import SymbolTable
 from VMWriter import VMWriter
 
+NOT = "not"
+
+OPEN_SQUARE_BRACKET = "["
+
 APPEND_CHAR = "String.appendChar"
 
 STRING_NEW = "String.new"
@@ -91,35 +95,6 @@ class CompilationEngine:
         self._symbol_table = SymbolTable()
         self._conditional_suffix = {WHILE_STATEMENT: 0, IF_STATEMENT: 0}
 
-    def write_token(self):
-        """
-        Writes a single token to XML file - with correct format and indentation
-        """
-        # TODO REMOVE
-        indentation = self._indentation * '  '
-        if self._input.token() in SPECIAL_CHARS_DICT:
-            self._output.write(f"{indentation}{SPECIAL_CHARS_DICT[self._input.token()]}\n")
-        else:
-            self._output.write(f"{indentation}{self._input.token_output_xml()}\n")
-        self._input.advance()
-
-    def write_tag(self, tag):
-        """
-        1. If the tag is a backslash, then we need to decrease the indentation by 1.
-        2. We then write the tag to the output file.
-        3. If the tag is not a backslash, then we need to increase the indentation by 1.
-        4. We then write the tag to the output file.
-        """
-        # TODO REMOVE
-        if BACK_SLASH in tag:
-            self._indentation += -1
-            indentation = self._indentation * '  '
-            self._output.write(f"{indentation}{tag}\n")
-        else:
-            indentation = self._indentation * '  '
-            self._output.write(f"{indentation}{tag}\n")
-            self._indentation += 1
-
     def compile_class(self) -> None:
         """Compiles a complete class."""
         self._input.advance()  # class
@@ -145,7 +120,7 @@ class CompilationEngine:
         """
         # Init symbol table
         self._symbol_table.start_subroutine()
-
+        self._conditional_suffix = {WHILE_STATEMENT: 0, IF_STATEMENT: 0}
         # Get function declaration data
         subroutine_type = self._input.token()
         self._input.advance()  # subroutine type
@@ -158,8 +133,8 @@ class CompilationEngine:
         self._input.advance()  # open bracket
         n_args = self.compile_parameter_list()
         self._input.advance()  # close bracket
-        self._input.advance()  # body open bracket
 
+        self._input.advance()  # body open bracket
         # Add local variables to symbol table
         n_vars = 0
         while self._input.token() == VAR:
@@ -176,13 +151,6 @@ class CompilationEngine:
             self._output.write_pop(POINTER, 0)
 
         self.compile_statements()
-
-        # Write function end and return statements
-        if subroutine_type == CONSTRUCTOR:
-            self._output.write_push(POINTER, 0)
-        elif subroutine_return_type == VOID:
-            self._output.write_push(CONSTANT, 0)
-        self._output.write_return()
         self._input.advance()  # body close bracket
 
     def compile_parameter_list(self) -> int:
@@ -230,7 +198,7 @@ class CompilationEngine:
         """Compiles a var declaration."""
         self._input.advance()  # var
         n_vars = self.variable_declaration(VAR)
-        self.write_token()  # ;
+        self._input.advance()  # ;
         return n_vars
 
     def compile_statements(self) -> None:
@@ -252,7 +220,11 @@ class CompilationEngine:
             self._input.advance()  # .
             second_name = f".{self._input.token()}"
             self._input.advance()  # subroutineName or className or varName
+        self.compile_subroutine_call(first_name, second_name)
+        self._output.write_pop(TEMP, 0)
+        self._input.advance()  # ;
 
+    def compile_subroutine_call(self, first_name, second_name):
         # Push correct data for methods
         if self._symbol_table.contains(first_name):
             var_kind, var_index = self._symbol_table.kind_of(first_name), self._symbol_table.index_of(first_name)
@@ -260,26 +232,20 @@ class CompilationEngine:
         elif second_name is None:  # if there doesn't exist a dot
             var_kind, var_index = self._symbol_table.kind_of(THIS), self._symbol_table.index_of(THIS)
             self._output.write_push(var_kind if var_kind != VAR else LOCAL, var_index)
-
         self._input.advance()  # open bracket
         n_args = self.compile_expression_list()
         self._input.advance()  # close bracket
         self._output.write_call(f"{first_name}{second_name}", n_args)
-        self._output.write_pop(TEMP, 0)
-        self._input.advance()  # ;
 
     def compile_let(self) -> None:
         """Compiles a let statement."""
         self._input.advance()  # let
-        var_name = self._input.token()  # varName
+        var_name = self._input.token()
+        self._input.advance()  # varName
         var_kind, var_index = self._symbol_table.kind_of(var_name), self._symbol_table.index_of(var_name)
-        is_array = self._input.token() == "["
+        is_array = self._input.token() == OPEN_SQUARE_BRACKET
         if is_array:
-            self._output.write_push(var_kind if var_kind != VAR else LOCAL, var_index)
-            self._input.advance()  # [ bracket
-            self.compile_expression()
-            self._output.write_arithmetic(ADD)
-            self._input.advance()  # ] bracket
+            self.compile_array(var_index, var_kind)
             self._input.advance()  # =
             self.compile_expression()
             self._output.write_pop(TEMP, 0)
@@ -293,16 +259,23 @@ class CompilationEngine:
             self._output.write_pop(var_kind if var_kind != VAR else LOCAL, var_index)
             self._input.advance()  # ;
 
+    def compile_array(self, var_index, var_kind):
+        self._output.write_push(var_kind if var_kind != VAR else LOCAL, var_index)
+        self._input.advance()  # [ bracket
+        self.compile_expression()
+        self._output.write_arithmetic(ADD)
+        self._input.advance()  # ] bracket
+
     def compile_while(self) -> None:
         """Compiles a while statement."""
-        label = f"WHILE_TRUE_{self._conditional_suffix[WHILE_STATEMENT]}"
-        end_label = f"WHILE_FALSE_{self._conditional_suffix[WHILE_STATEMENT]}"
+        label = f"WHILE_EXP{self._conditional_suffix[WHILE_STATEMENT]}"
+        end_label = f"WHILE_END{self._conditional_suffix[WHILE_STATEMENT]}"
         self._output.write_label(label)
         self._conditional_suffix[WHILE_STATEMENT] += 1
         self._input.advance()  # while
         self._input.advance()  # open bracket
         self.compile_expression()
-        self._output.write_arithmetic(NEG)
+        self._output.write_arithmetic(NOT)
         self._output.write_if(end_label)
         self._input.advance()  # close bracket
         self._input.advance()  # open bracket
@@ -316,31 +289,36 @@ class CompilationEngine:
         self._input.advance()  # return
         if self._input.token() != SEMICOLON:
             self.compile_expression()
+        else:
+            self._output.write_push(CONSTANT, 0)
+        self._output.write_return()
         self._input.advance()  # ;
 
     def compile_if(self) -> None:
         """Compiles a if statement, possibly with a trailing else clause."""
-        end_label = f"IF_FALSE_{self._conditional_suffix[IF_STATEMENT]}"
+        else_label = f"IF_FALSE{self._conditional_suffix[IF_STATEMENT]}"
+        end_label = f"IF_END{self._conditional_suffix[IF_STATEMENT]}"
         self._conditional_suffix[IF_STATEMENT] += 1
         self._input.advance()  # if
         self._input.advance()  # open bracket
         self.compile_expression()
-        self._output.write_arithmetic(NEG)
-        self._output.write_if(end_label)
+        self._output.write_arithmetic(NOT)
+        self._output.write_if(else_label)
         self._input.advance()  # close bracket
         self._input.advance()  # open bracket
         self.compile_statements()
         self._input.advance()  # close bracket
-        self._output.write_label(end_label)
+        self._output.write_goto(end_label)
+        self._output.write_label(else_label)
         if self._input.token() == ELSE:
             self._input.advance()  # else
             self._input.advance()  # open bracket
             self.compile_statements()
             self._input.advance()  # close bracket
+        self._output.write_label(end_label)
 
     def compile_expression(self) -> None:
         """Compiles an expression."""
-        # TODO
         self.compile_term()
         if self._input.token() in OPERATORS:
             op = OPERATORS[self._input.token()]
@@ -351,7 +329,7 @@ class CompilationEngine:
     def compile_term(self) -> None:
         """Compiles a term.
         This routine is faced with a slight difficulty when
-        trying to decide between some of the alternative parsing rules.
+        trying to decide between some alternative parsing rules.
         Specifically, if the current token is an identifier, the routing must
         distinguish between a variable, an array entry, and a subroutine call.
         A single look-ahead token, which may be one of "[", "(", or "." suffices
@@ -365,23 +343,26 @@ class CompilationEngine:
             self.compile_expression()
             self._input.advance()  # close bracket
 
-        # TODO
         elif self._input.token_type() == IDENTIFIER:
-            self.write_token()  # subroutineName or className or varName
-            if self._input.token() == ".":
-                self.write_token()  # .
-                self.write_token()  # subroutineName if className or varName before
-                self.write_token()  # ( bracket
-                self.compile_expression_list()
-                self.write_token()  # ) bracket
-            elif self._input.token() == "[":
-                self.write_token()  # [ bracket
-                self.compile_expression()
-                self.write_token()  # ] bracket
-            elif self._input.token() == OPEN_ROUND_BRACKET:
-                self.write_token()  # ( bracket
-                self.compile_expression_list()
-                self.write_token()  # ) bracket
+            first_name, second_name = self._input.token(), None
+            self._input.advance()  # subroutineName or className or varName
+
+            if self._input.token() == OPEN_SQUARE_BRACKET:  # is an array
+                var_kind, var_index = self._symbol_table.kind_of(first_name), self._symbol_table.index_of(first_name)
+                self.compile_array(var_index, var_kind)
+                self._output.write_pop(POINTER, 1)
+                self._output.write_push(THAT, 0)
+
+            elif self._input.token() in [DOT, OPEN_ROUND_BRACKET]:  # is a subroutine call
+                if self._input.token() == DOT:
+                    self._input.advance()  # .
+                    second_name = f".{self._input.token()}"
+                    self._input.advance()  # subroutineName if className or varName before
+                self.compile_subroutine_call(first_name, second_name)
+
+            else:  # is a variable
+                var_kind, var_index = self._symbol_table.kind_of(first_name), self._symbol_table.index_of(first_name)
+                self._output.write_push(var_kind if var_kind != VAR else LOCAL, var_index)
 
         elif self._input.token() in UNARY_OPERATORS:
             op = UNARY_OPERATORS[self._input.token()]
@@ -395,8 +376,8 @@ class CompilationEngine:
         elif self._input.token_type() == CONSTANTS[1]:  # stringConstant
             self.compile_str_const()
         elif self._input.token() == CONSTANT_KEYWORDS[0]:  # true
-            self._output.write_push(CONSTANT, 1)
-            self._output.write_arithmetic(NEG)
+            self._output.write_push(CONSTANT, 0)
+            self._output.write_arithmetic(NOT)
         elif self._input.token() == CONSTANT_KEYWORDS[1] or self._input.token() == CONSTANT_KEYWORDS[2]:  # null/false
             self._output.write_push(CONSTANT, 0)
         elif self._input.token() == CONSTANT_KEYWORDS[3]:  # this
