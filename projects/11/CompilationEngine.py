@@ -225,15 +225,22 @@ class CompilationEngine:
         self._input.advance()  # ;
 
     def compile_subroutine_call(self, first_name, second_name):
+        n_args = 0
         # Push correct data for methods
         if self._symbol_table.contains(first_name):
-            var_kind, var_index = self._symbol_table.kind_of(first_name), self._symbol_table.index_of(first_name)
-            self._output.write_push(var_kind if var_kind != VAR else LOCAL, var_index)
+            var_index = self._symbol_table.index_of(first_name)
+            var_kind = self.segment_specifier(self._symbol_table.kind_of(first_name))
+            self._output.write_push(var_kind, var_index)
+            n_args += 1
+            first_name = self._symbol_table.type_of(first_name)
         elif second_name is None:  # if there doesn't exist a dot
-            var_kind, var_index = self._symbol_table.kind_of(THIS), self._symbol_table.index_of(THIS)
-            self._output.write_push(var_kind if var_kind != VAR else LOCAL, var_index)
+            self._output.write_push(POINTER, 0)
+            second_name = f".{first_name}"
+            first_name = self._class_name
+            n_args += 1
+        # elif first_name
         self._input.advance()  # open bracket
-        n_args = self.compile_expression_list()
+        n_args += self.compile_expression_list()
         self._input.advance()  # close bracket
         self._output.write_call(f"{first_name}{second_name}", n_args)
 
@@ -242,7 +249,8 @@ class CompilationEngine:
         self._input.advance()  # let
         var_name = self._input.token()
         self._input.advance()  # varName
-        var_kind, var_index = self._symbol_table.kind_of(var_name), self._symbol_table.index_of(var_name)
+        var_index = self._symbol_table.index_of(var_name)
+        var_kind = self.segment_specifier(self._symbol_table.kind_of(var_name))
         is_array = self._input.token() == OPEN_SQUARE_BRACKET
         if is_array:
             self.compile_array(var_index, var_kind)
@@ -256,15 +264,21 @@ class CompilationEngine:
         else:
             self._input.advance()  # =
             self.compile_expression()
-            self._output.write_pop(var_kind if var_kind != VAR else LOCAL, var_index)
+            self._output.write_pop(var_kind, var_index)
             self._input.advance()  # ;
 
     def compile_array(self, var_index, var_kind):
-        self._output.write_push(var_kind if var_kind != VAR else LOCAL, var_index)
+        var_kind = self.segment_specifier(var_kind)
         self._input.advance()  # [ bracket
         self.compile_expression()
+        self._output.write_push(var_kind, var_index)
         self._output.write_arithmetic(ADD)
         self._input.advance()  # ] bracket
+
+    def segment_specifier(self, var_kind):
+        if var_kind == FIELD:
+            var_kind = THIS
+        return var_kind if var_kind != VAR else LOCAL
 
     def compile_while(self) -> None:
         """Compiles a while statement."""
@@ -296,26 +310,30 @@ class CompilationEngine:
 
     def compile_if(self) -> None:
         """Compiles a if statement, possibly with a trailing else clause."""
+        if_label = f"IF_TRUE{self._conditional_suffix[IF_STATEMENT]}"
         else_label = f"IF_FALSE{self._conditional_suffix[IF_STATEMENT]}"
         end_label = f"IF_END{self._conditional_suffix[IF_STATEMENT]}"
         self._conditional_suffix[IF_STATEMENT] += 1
         self._input.advance()  # if
         self._input.advance()  # open bracket
         self.compile_expression()
-        self._output.write_arithmetic(NOT)
-        self._output.write_if(else_label)
+        self._output.write_if(if_label)
+        self._output.write_goto(else_label)
+        self._output.write_label(if_label)
         self._input.advance()  # close bracket
         self._input.advance()  # open bracket
         self.compile_statements()
         self._input.advance()  # close bracket
-        self._output.write_goto(end_label)
-        self._output.write_label(else_label)
         if self._input.token() == ELSE:
+            self._output.write_goto(end_label)
+            self._output.write_label(else_label)
             self._input.advance()  # else
             self._input.advance()  # open bracket
             self.compile_statements()
             self._input.advance()  # close bracket
-        self._output.write_label(end_label)
+            self._output.write_label(end_label)
+        else:
+            self._output.write_label(else_label)
 
     def compile_expression(self) -> None:
         """Compiles an expression."""
@@ -361,8 +379,9 @@ class CompilationEngine:
                 self.compile_subroutine_call(first_name, second_name)
 
             else:  # is a variable
-                var_kind, var_index = self._symbol_table.kind_of(first_name), self._symbol_table.index_of(first_name)
-                self._output.write_push(var_kind if var_kind != VAR else LOCAL, var_index)
+                var_index = self._symbol_table.index_of(first_name)
+                var_kind = self.segment_specifier(self._symbol_table.kind_of(first_name))
+                self._output.write_push(var_kind, var_index)
 
         elif self._input.token() in UNARY_OPERATORS:
             op = UNARY_OPERATORS[self._input.token()]
@@ -390,7 +409,7 @@ class CompilationEngine:
         self._output.write_call(STRING_NEW, 1)
         for i in range(str_len):
             self._output.write_push(CONSTANT, ord(self._input.token()[i]))
-            self._output.write_call(APPEND_CHAR, 1)
+            self._output.write_call(APPEND_CHAR, 2)
 
     def compile_int_const(self):
         self._output.write_push(CONSTANT, int(self._input.token()))
