@@ -73,7 +73,12 @@ CLASS_VARIABLES = [STATIC, FIELD]
 COMMA_SEPERATOR = ","
 BACK_SLASH = "/"
 DOT = "."
-SPECIAL_CHARS_DICT = {'&': "<symbol> &amp; </symbol>", '<': "<symbol> &lt; </symbol>", '>': "<symbol> &gt; </symbol>"}
+
+
+def segment_specifier(var_kind):
+    if var_kind == FIELD:
+        var_kind = THIS
+    return var_kind if var_kind != VAR else LOCAL
 
 
 class CompilationEngine:
@@ -89,10 +94,14 @@ class CompilationEngine:
         :param input_stream: The input stream.
         :param output_stream: The output stream.
         """
+        self._conditional_suffix = None
         self._class_name = None
         self._input = input_stream
         self._output = VMWriter(output_stream)
         self._symbol_table = SymbolTable()
+        self.reset_condition()
+
+    def reset_condition(self):
         self._conditional_suffix = {WHILE_STATEMENT: 0, IF_STATEMENT: 0}
 
     def compile_class(self) -> None:
@@ -120,18 +129,18 @@ class CompilationEngine:
         """
         # Init symbol table
         self._symbol_table.start_subroutine()
-        self._conditional_suffix = {WHILE_STATEMENT: 0, IF_STATEMENT: 0}
+        self.reset_condition()
+        
         # Get function declaration data
         subroutine_type = self._input.token()
         self._input.advance()  # subroutine type
         if subroutine_type == METHOD:
             self._symbol_table.define(THIS, self._class_name, ARG)
-        subroutine_return_type = self._input.token()
         self._input.advance()  # subroutine return type
         subroutine_name = self._input.token()
         self._input.advance()  # subroutine name
         self._input.advance()  # open bracket
-        n_args = self.compile_parameter_list()
+        self.compile_parameter_list()
         self._input.advance()  # close bracket
 
         self._input.advance()  # body open bracket
@@ -229,7 +238,7 @@ class CompilationEngine:
         # Push correct data for methods
         if self._symbol_table.contains(first_name):
             var_index = self._symbol_table.index_of(first_name)
-            var_kind = self.segment_specifier(self._symbol_table.kind_of(first_name))
+            var_kind = segment_specifier(self._symbol_table.kind_of(first_name))
             self._output.write_push(var_kind, var_index)
             n_args += 1
             first_name = self._symbol_table.type_of(first_name)
@@ -250,7 +259,7 @@ class CompilationEngine:
         var_name = self._input.token()
         self._input.advance()  # varName
         var_index = self._symbol_table.index_of(var_name)
-        var_kind = self.segment_specifier(self._symbol_table.kind_of(var_name))
+        var_kind = segment_specifier(self._symbol_table.kind_of(var_name))
         is_array = self._input.token() == OPEN_SQUARE_BRACKET
         if is_array:
             self.compile_array(var_index, var_kind)
@@ -268,17 +277,12 @@ class CompilationEngine:
             self._input.advance()  # ;
 
     def compile_array(self, var_index, var_kind):
-        var_kind = self.segment_specifier(var_kind)
+        var_kind = segment_specifier(var_kind)
         self._input.advance()  # [ bracket
         self.compile_expression()
         self._output.write_push(var_kind, var_index)
         self._output.write_arithmetic(ADD)
         self._input.advance()  # ] bracket
-
-    def segment_specifier(self, var_kind):
-        if var_kind == FIELD:
-            var_kind = THIS
-        return var_kind if var_kind != VAR else LOCAL
 
     def compile_while(self) -> None:
         """Compiles a while statement."""
@@ -341,7 +345,7 @@ class CompilationEngine:
         if self._input.token() in OPERATORS:
             op = OPERATORS[self._input.token()]
             self._input.advance()  # op
-            self.compile_term()
+            self.compile_expression()
             self._output.write_arithmetic(op)
 
     def compile_term(self) -> None:
@@ -380,7 +384,7 @@ class CompilationEngine:
 
             else:  # is a variable
                 var_index = self._symbol_table.index_of(first_name)
-                var_kind = self.segment_specifier(self._symbol_table.kind_of(first_name))
+                var_kind = segment_specifier(self._symbol_table.kind_of(first_name))
                 self._output.write_push(var_kind, var_index)
 
         elif self._input.token() in UNARY_OPERATORS:
