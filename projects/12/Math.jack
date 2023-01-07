@@ -32,6 +32,16 @@ class Math {
             // 5.      let sum = sum + shiftedx
             // 6.   let shiftedx = 2*shiftedx
             // 7. return sum
+            var int sum,shiftedX,width;
+            let sum = 0;
+            let shiftedX = x;
+            let width = 16;
+            while (width > 0)
+            {
+
+                let shiftedX=^shiftedX;
+                let width=width - 1;
+            }
         }
 
         /** 
