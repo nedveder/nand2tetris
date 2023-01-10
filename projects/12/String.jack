@@ -14,31 +14,51 @@
 class String {
     /** constructs a new empty string with a maximum length of maxLength
      *  and initial length of 0. */
+    field Array string;
+    field int length;
     constructor String new(int maxLength) {
+        if(maxLength>0){
+            let string=Array.new(maxLength);
+        }
+        let length=0;
+        return this;
     }
 
     /** Disposes this string. */
     method void dispose() {
+        do Memory.deAlloc(this);
+        return;
     }
 
     /** Returns the current length of this string. */
     method int length() {
+        return length;
     }
 
     /** Returns the character at the j-th location of this string. */
     method char charAt(int j) {
+        return string[j];
     }
 
     /** Sets the character at the j-th location of this string to c. */
     method void setCharAt(int j, char c) {
+        let string[j]=c;
+        return;
     }
 
     /** Appends c to this string's end and returns this string. */
     method String appendChar(char c) {
+        let string[length]=c;
+        let length=length+1;
+        return this;
     }
 
     /** Erases the last character from this string. */
     method void eraseLastChar() {
+        if(length>0){
+            let length=length-1;
+        }
+        return;
     }
 
     /** Returns the integer value of this string, 
@@ -50,6 +70,22 @@ class String {
         // 3.   let d = integer value of str.charAt(i)
         // 4.   let val = (val*10) + d
         // 5. return val
+        var int val,curLength,curVal;
+        var boolean negative;
+        let val=0;let curLength=0;let curVal=0;let negative=false;
+        if(string[0]=45)
+        {
+            let negative=true;
+        }
+        while((curLength<length)|(~(curVal<0)|(curVal>9))){
+            let curVal=charAt(curLength)-48;
+            let val=(val*10)+curVal;
+            let curLength=curLength+1;
+        }
+        if(negative){
+            return -val;
+        }
+        return val; 
     }
 
     /** Sets this string to hold a representation of the given value. */
@@ -61,17 +97,30 @@ class String {
         // 4.   return c (as a string)
         // 5. else
         // 6.   return int2String(val / 10).appendChar(c)
+        var char lastDigit;
+        if (val<10){
+            do setCharAt(0,val);
+            return;
+        }
+        let lastDigit=Math.mod(val,10)+48;
+        let val=val/10;
+        do setInt(val);
+        do appendChar(lastDigit);
+        return;
     }
 
     /** Returns the new line character. */
     function char newLine() {
+        return 128;
     }
 
     /** Returns the backspace character. */
     function char backSpace() {
+        return 129;
     }
 
     /** Returns the double quote (") character. */
     function char doubleQuote() {
+        return 34;
     }
 }

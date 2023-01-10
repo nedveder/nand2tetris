@@ -11,17 +11,29 @@
  * the screen is indexed (0,0).
  */
 class Screen {
+
+        static boolean color;
         /** Initializes the Screen. */
         function void init() {
+            let color=false;
+            return;
         }
 
         /** Erases the entire screen. */
         function void clearScreen() {
+            var int i;
+            let i=0;
+            while(i<8192){
+                do Memory.poke(16384+i,0);
+            }
+            return;
         }
 
         /** Sets the current color, to be used for all subsequent drawXXX commands.
          *    Black is represented by true, white by false. */
         function void setColor(boolean b) {
+            let color=b;
+            return;
         }
 
         /** Draws the (x,y) pixel, using the current color. */
@@ -39,6 +51,17 @@ class Screen {
             //    to the pixel to the current color.
             // 4. Use Memory.poke to write the modified 16-bit value to the RAM
             // address.
+            var int address,current,mask;
+            let address=16384 + (^^^^^y) + (####x);
+            let mask=(x&15)&color;
+            let current=Memory.peek(address);
+            if(color){ // black
+                do Memory.poke(address,current|(color&mask));
+            }
+            else{ // white
+                do Memory.poke(address,current&(color&mask));
+            }
+            return;
         }
 
         /** Draws a line from pixel (x1,y1) to pixel (x2,y2), using the current color. */
@@ -56,11 +79,13 @@ class Screen {
             // The case where y1 == y2 can be implemented efficiently by
             // trying to draw as many pixels as possible in a single assignment,
             // similarly to Fill in project 4.
+            return;
         }
 
         /** Draws a filled rectangle whose top left corner is (x1, y1)
          * and bottom right corner is (x2,y2), using the current color. */
         function void drawRectangle(int x1, int y1, int x2, int y2) {
+            return;
         }
 
         /** Draws a filled circle of radius r<=181 around (x,y), using the current color. */
@@ -71,5 +96,6 @@ class Screen {
             // 1. for (dy = -r ... r)
             // 2.   let halfWidth = sqrt(r*r - dy*dy)
             // 3.   do drawLine(x-halfWidth, y+dy, x+halfWidth, y+dy)
+            return;
         }
 }
