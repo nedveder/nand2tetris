@@ -29,8 +29,9 @@ CHIP ExtendAlu {
      // Shift Flags
      Or8Way(in=ShiftedA, out=zFlag1);
      Or8Way(in=ShiftedB, out=zFlag2);
-     Or(a=zFlag1, b=zFlag2, out=Nzr);
-     Not(in=Nzr, out=ShiftedZero);
+     Not(in=zFlag1, out=nzf1);
+     Not(in=zFlag2, out=nzf2);
+     And(a=nzf1, b=nzf2, out=ShiftedZero);
      // Flag selection
      Mux(a=ShiftedZero, b=ALUZero, sel=instruction[8], out=zr);
      Mux(a=ShiftNegative, b=ALUnegative, sel=instruction[8], out=ng);
