@@ -43,23 +43,23 @@ CHIP ALU {
         ng; // 1 if (out < 0),  0 otherwise
 
     PARTS:
-    Mux16(a=x, b=false, sel=zx, out=Proc1X);
-    Not16(in=Proc1X, out=NProc1X);
-    Mux16(a=Proc1X, b=NProc1X, sel=nx, out=Proc2X);
+    Not16(in=x, out=nX);
+    Mux4Way16(a=x, b=nX, c=false, d=true, sel[0]=nx, sel[1]=zx, out=preX);
+    
+    Not16(in=y, out=nY);
+    Mux4Way16(a=y, b=nY, c=false, d=true, sel[0]=ny, sel[1]=zy, out=preY);
+    
 
-    Mux16(a=y, b=false, sel=zy, out=Proc1Y);
-    Not16(in=Proc1Y, out=NProc1Y);
-    Mux16(a=Proc1Y, b=NProc1Y, sel=ny, out=Proc2Y);
+    And16(a=preX, b=preY, out=AndXY);
+    Add16(a=preX, b=preY, out=AddXY);
+    Mux16(a=AndXY, b=AddXY, sel=f, out=Prod);
 
-    And16(a=Proc2Y, b=Proc2X, out=AndXY);
-    Add16(a=Proc2Y, b=Proc2X, out=AddXY);
-    Mux16(a=AndXY, b=AddXY, sel=f, out=Prod1);
-
-    Not16(in=Prod1, out=NProd1);
-    Mux16(a=Prod1, b=NProd1, sel=no, out[0..7]=Prod2A, out[8..15]=Prod2B,out[15]=ng,out=out);
+    Not16(in=Prod, out=NProd);
+    Mux16(a=Prod, b=NProd, sel=no, out[0..7]=Prod2A, out[8..15]=Prod2B,out[15]=ng,out=out);
 
     Or8Way(in=Prod2A, out=zFlag1);
     Or8Way(in=Prod2B, out=zFlag2);
-    Or(a=zFlag1, b=zFlag2, out=Nzr);
-    Not(in=Nzr, out=zr);
+    Not(in=zFlag1, out=nzf1);
+    Not(in=zFlag2, out=nzf2);
+    And(a=nzf1, b=nzf2, out=zr);
 }
