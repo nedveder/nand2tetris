@@ -1,0 +1,65 @@
+// This file is part of the materials accompanying the book
+// "The Elements of Computing Systems" by Nisan and Schocken, 
+// MIT Press 2004. Book site: http://www.idc.ac.il/tecs
+// File name: projects/12/StringTest/Main.jack.   Version: beta 1.4
+
+/** Test program for the OS String class. */
+class Main {
+
+    /** Performs several string manipulations and prints their
+     *  results. */
+    function void main() {
+        var String s,sn;
+	var Array r;
+
+/*	let r = 8000;*/let r = Array.new(13);
+
+   let sn = "-11111";
+   do sn.setInt(12345);
+	let r[2] = sn.charAt(2);
+	let r[3] = sn.length();
+	let r[4] = sn.intValue();
+   do sn.setInt(-3000);
+	let r[5] = sn.charAt(0);
+	let r[6] = sn.charAt(4);
+   let r[7] = sn.length();
+	let r[8] = sn.intValue();
+
+	do sn.dispose();
+	 
+ let s = "abcde";
+
+	let r[0] = s.charAt(3);
+	let r[1] = s.length();
+	do s.setCharAt(2, 45);
+	let r[9] = s.charAt(2);
+
+	do s.eraseLastChar();
+	let r[10] = s.length(2);
+        do s.dispose();
+
+        let r[11] = String.backSpace();  // backSpace: 129
+        let r[12] = String.doubleQuote();// doubleQuote: 34
+        let r[13] = String.newLine();    // newLine: 128
+   
+	do Memory.poke(8000, r[0]);
+	do Memory.poke(8001, r[1]);
+	do Memory.poke(8002, r[2]);
+	do Memory.poke(8003, r[3]);
+	do Memory.poke(8004, r[4]);
+	do Memory.poke(8005, r[5]);
+	do Memory.poke(8006, r[6]);
+	do Memory.poke(8007, r[7]);
+	do Memory.poke(8008, r[8]);	
+	do Memory.poke(8009, r[9]);
+	do Memory.poke(8010, r[10]);
+	do Memory.poke(8011, r[11]);
+	do Memory.poke(8012, r[12]);
+	do Memory.poke(8013, r[13]);
+	do r.dispose();
+
+
+        return;
+    }
+
+}

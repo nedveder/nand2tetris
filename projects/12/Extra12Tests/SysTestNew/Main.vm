@@ -1,0 +1,15 @@
+function Main.main 0
+push constant 1
+neg
+push constant 1
+neg
+call Output.moveCursor 2
+pop temp 0
+push constant 0
+push constant 0
+push constant 20
+push constant 20
+call Screen.drawRectangle 4
+pop temp 0
+push constant 0
+return

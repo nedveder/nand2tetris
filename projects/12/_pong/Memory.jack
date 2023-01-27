@@ -1,0 +1,175 @@
+// This file is part of nand2tetris, as taught in The Hebrew University, and
+// was written by Aviv Yaish. It is an extension to the specifications given
+// [here](https://www.nand2tetris.org) (Shimon Schocken and Noam Nisan, 2017),
+// as allowed by the Creative Common Attribution-NonCommercial-ShareAlike 3.0
+// Unported [License](https://creativecommons.org/licenses/by-nc-sa/3.0/).
+// File name: projects/12/Memory.jack
+
+/**
+ * This library provides two services: direct access to the computer's main
+ * memory (RAM), and allocation and recycling of memory blocks. The Hack RAM
+ * consists of 32,768 words, each holding a 16-bit binary number.
+ */ 
+ class Memory {
+    /** Initializes the class. */
+    static Array memory;
+    static int freeList;
+    function void init() {
+        let memory=0;
+        let freeList = 2048 ; // 2048
+        let memory[freeList] = 14336; // length
+        let memory[freeList + 1] = 0; // next node
+        return;
+    }
+
+    /** Returns the RAM value at the given address. */
+    function int peek(int address) {
+        return memory[address];
+    }
+
+    /** Sets the RAM value at the given address to the given value. */
+    function void poke(int address, int value) {
+        let memory[address]=value;
+        return;
+    }
+
+    function int getHead() {
+        return freeList;
+    }
+
+    function boolean isNodeFit(int address, int length) {
+        return ~(memory[address]-2 < length);
+    }
+
+    function int nodeLength(int address) {
+        return memory[address];
+    }
+
+    function int nextNode(int address) {
+        if (address = 0) {
+            return 0;
+        }
+        return memory[address+1];
+    }
+
+    function int lengthDiff(int curr, int desired) {
+        return (curr - desired);
+    }
+
+    function void setLength(int address, int length) {
+        let memory[address] = length;
+        return;
+    }
+
+    function void printNode(int address) {
+        do Output.printString("address: ");
+        do Output.printInt(address);
+        do Output.printString(" next: ");
+        do Output.printInt(Memory.nextNode(address));
+        do Output.printString(" length: ");
+        do Output.printInt(Memory.nodeLength(address));
+        do Output.println();
+        return;
+    }
+
+
+    function void printList(int address) {
+        var int curr;
+        let curr = Memory.getHead();
+        do Output.printString("list:");
+        do Output.println();
+        while (~(curr = 0)) {
+            do Memory.printNode(curr);
+            let curr = Memory.nextNode(curr);
+        }
+        do Output.printString("end");
+        do Output.println();
+        return;
+    }
+
+
+    function int findFirstFit(int wantedSize) {
+        var int curr;
+        let curr = Memory.getHead();
+        while(~(curr = 0) & (Memory.nodeLength(curr) < wantedSize)) {
+            let curr = Memory.nextNode(curr);
+        }
+        if (curr = 0) {
+            return -1;
+        }
+        return curr;
+    }
+
+    function void linkPrev(int address) {
+        var int curr, next;
+        let curr = Memory.getHead();
+        if (curr = address) {
+            let freeList = Memory.nextNode(curr);
+            return;
+        }
+        while(~(Memory.nextNode(curr) = address)) {
+            let curr = Memory.nextNode(curr);
+        }
+        let next = Memory.nextNode(Memory.nextNode(curr));
+        do Memory.poke(curr+1, next);
+        return;
+    }
+
+
+    /** Finds an available RAM block of the given size and returns
+     *  a reference to its base address. Assume size > 0. */
+    function int wantedSize) {
+        // Pseudocode:
+        // 1. Search freeList using best-fit or first-fit heuristics to obtain
+        //    a segment with segment.length > size.
+        //    If no such segment is found, return -1.
+        // 2. block = needed part of the found segment (or all of it, if the 
+        //            segment remainder is too small).
+        // 3. block[-1] = size + 1 // Remember block size, for de-allocation
+        // 4. Update freeList to reflect the allocation
+        // 5. Return block
+        // The figure MemoryTest/MemoryFreeListExample.png illustrates how
+        // the freeList should look like.
+
+
+        var int foundNode, newNode;
+        
+        let foundNode = Memory.findFirstFit(wantedSize+1);
+        let newNode = foundNode + Memory.nodeLength(foundNode) - wantedSize-1;
+        if (foundNode = newNode) {
+            do Memory.linkPrev(foundNode);
+        }
+        do Memory.setLength(foundNode, Memory.nodeLength(foundNode) - wantedSize-1);
+        do Memory.setLength(newNode, wantedSize+1);
+        return newNode+1;
+    }
+
+    /** De-allocates the given object (cast as an array) by making
+     *  it available for future allocations. */
+    function void deAlloc(Array o) {
+        // Pseudocode:
+        // 1. segment = o - 1
+        // 2. Insert segment into the freeList
+        do Memory.poke(o, freeList);
+        let freeList = o-1;
+        return;
+    }    
+
+    /** Returns the maximal element contained in the given Array/object. 
+     *  Assume inputs are initialized and contain at least one element. */
+    function int max(Array o) {
+        // Hint: the algorithm you need to implement in Memory.alloc saves the
+        // size of the allocated block in the memory cell right before the 
+        // start of the block, and this can be used to implement Memory.max.
+        var int arrSize, i, maxItem;
+        let arrSize = memory[o-1];
+        let maxItem = o[0];
+        let i = 1;
+        while(i < arrSize) {
+            if (o[i] > maxItem) {
+                let maxItem = o[i];
+            }
+        }
+        return maxItem;
+    }
+}

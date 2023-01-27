@@ -1,0 +1,22 @@
+class Main {
+	function void main() {
+	var int i,j; 
+	var Array a;
+	let i = 1;
+	while(i<4){
+	let a = Array.new(i*1000);
+	do a.dispose();  
+	let i = i + 1;
+	let j = j + i*1000;
+	}
+	let a = Array.new(10000);
+	do Memory.poke(8000, 333);       // RAM[8000]=333
+	do a.dispose();  	
+        let a = Array.new(3); 
+ 	let a[2] = 222;
+        do Memory.poke(8002, a[2]);      // RAM[8002]=222
+//	do Memory.poke(8004, j);       // RAM[8000]=333
+	do a.dispose();  
+	return;
+	}
+}

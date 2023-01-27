@@ -1,0 +1,62 @@
+// This file is part of nand2tetris, as taught in The Hebrew University, and
+// was written by Aviv Yaish. It is an extension to the specifications given
+// [here](https://www.nand2tetris.org) (Shimon Schocken and Noam Nisan, 2017),
+// as allowed by the Creative Common Attribution-NonCommercial-ShareAlike 3.0
+// Unported [License](https://creativecommons.org/licenses/by-nc-sa/3.0/).
+
+/**
+ * A library that supports various program execution services.
+ */
+ class Sys {
+    /** Performs all the initializations required by the OS. */
+    function void init() {
+        // Pseudocode:
+        // 1. for each relevant OS class, do Class.init
+        //    Some OS classes depend on others, so order is important here!
+        // 2. do Main.main()
+        // 3. do Sys.halt()
+        do Math.init();
+        do Memory.init();
+        do Screen.init();
+        do Output.init();
+        do Keyboard.init();
+        do Main.main();
+        do Sys.halt();
+        return;
+    }
+
+    /** Halts program execution. */
+    function void halt() {
+        while(true) {
+            // do nothing
+        }
+        return;
+    }
+
+    /** Waits approximately duration milliseconds and returns.  */
+    function void wait(int duration) {
+        var int i, twoSeconds;
+        let i = 0;
+        let twoSeconds = 32767;
+        while(i<twoSeconds) {
+            let i=i+1;
+        }
+        while(i<twoSeconds) {
+            let i=i+1;
+        }
+        while(i<twoSeconds) {
+            let i=i+1;
+        }
+        return;
+    }
+
+    /** Displays the given error code in the form "ERR<errorCode>",
+     *  and halts the program's execution. */
+    function void error(int errorCode) {
+        do Output.printString("ERR");
+        do Output.printInt(errorCode);
+        do Output.println();
+        do Sys.halt();
+        return;
+    }
+}

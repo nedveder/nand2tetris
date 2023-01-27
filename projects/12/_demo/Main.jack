@@ -1,0 +1,46 @@
+// This file is part of the materials accompanying the book
+// "The Elements of Computing Systems" by Nisan and Schocken, 
+// MIT Press 2004. Book site: http://www.idc.ac.il/tecs
+// File name: projects/12/StringTest/Main.jack.   Version: beta 1.4
+
+/** Test program for the OS String class. */
+class Main {
+    function void main() {
+        var String s,sn;
+	    var Array r;
+        let r = Array.new(13);
+        let sn = "-11111";
+        // do Output.printString(sn);
+        // do Output.println();
+        // do sn.setInt(12345);
+        // do Output.printString(sn);
+        // do Output.println();
+        // let r[2] = sn.charAt(2);
+        // do Output.printInt(r[2]);
+        // do Output.println();
+        
+        // let r[3] = sn.length();
+        // do Output.printInt(r[3]);
+        // do Output.println();
+        // let r[4] = sn.intValue();
+        // do Output.printInt(r[4]);
+        // do Output.println();
+        do sn.setInt(-3000);
+        do Output.printString(sn);
+        do Output.println();
+        let r[5] = sn.charAt(0);
+        do Output.printInt(r[5]);
+        do Output.println();
+        let r[6] = sn.charAt(4);
+        do Output.printInt(r[6]);
+        do Output.println();
+        let r[7] = sn.length();
+        do Output.printInt(r[7]);
+        do Output.println();
+        let r[8] = sn.intValue();
+        do Output.printInt(r[8]);
+        do Output.println();
+        do sn.dispose();
+        return;
+    }
+}

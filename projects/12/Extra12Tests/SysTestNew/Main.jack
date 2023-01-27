@@ -1,0 +1,31 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/SysTest/Main.jack
+
+/** Test program for the OS Sys class. */
+class Main {
+
+    /** Tests the error method of the Sys class.
+		uncomment the error you want to check
+		should not print a rectangle after*/
+    function void main() {
+	// checks 2,3,9
+	
+		//do Array.new(0); // should print ERR2
+		//do Math.divide(3,0); //should print ERR3
+		//do Screen.drawRectangle(-1, -2, 0, 0); // should print ERR9
+
+	//checks 14
+		//do String.new(-1); // should print ERR14
+	
+	// checks 20
+		do Output.moveCursor(-1,-1); // should print ERR20
+	
+	
+	// checks progam has been halted
+		do Screen.drawRectangle(0,0,20,20);
+		return;
+	
+    }
+}
