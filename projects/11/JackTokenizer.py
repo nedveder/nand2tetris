@@ -5,13 +5,13 @@ was written by Aviv Yaish. It is an extension to the specifications given
 as allowed by the Creative Common Attribution-NonCommercial-ShareAlike 3.0
 Unported [License](https://creativecommons.org/licenses/by-nc-sa/3.0/).
 """
-import re
+from re import Pattern,compile,match,DOTALL
 import typing
 
 # The regex matches all whitespaces, all comments starting with // and all comments starting with /* and ending with */.
-COMMENTS_WHITESPACES_REGEX = re.compile(r'(\s+|//[^\n]*|/\*.*?\*/)+', re.DOTALL)
+COMMENTS_WHITESPACES_REGEX: Pattern[str] = compile(r'(\s+|//[^\n]*|/\*.*?\*/)+', DOTALL)
 # Each item contains regex pattern for specific type of token being parsed
-TOKEN_PATTEN_DICT = {
+TOKEN_PATTEN_DICT: dict[str, str] = {
     "stringConstant": r'"(.*?)"'
     , "integerConstant": r'([0-9]+)'
     , "symbol": r'([{}()[\]\.,;+\-\*/&|<>=~^#])'
@@ -109,11 +109,11 @@ class JackTokenizer:
         """It receives a file and reads it into a string.
         It also initializes the position pointer to 0.
         """
-        self._input = input_stream.read()
+        self._input: str = input_stream.read()
         self._position: int = 0
         self.skip_comment_whitespaces()
-        self._token = ""
-        self._token_type = ""
+        self._token: str  = ""
+        self._token_type : str = ""
 
     def has_more_tokens(self) -> bool:
         """
@@ -129,12 +129,12 @@ class JackTokenizer:
         if not self.has_more_tokens():
             return
         for token, pattern in TOKEN_PATTEN_DICT.items():
-            match = re.match(re.compile(pattern), self._input[self._position:])
+            match = match(compile(pattern), self._input[self._position:])
             if match:
                 self.tokenize(match, token)
                 return
 
-    def tokenize(self, match, token):
+    def tokenize(self, match, token) -> None:
         """
         Tokenizes the current match string and the selected token
         """
@@ -145,14 +145,14 @@ class JackTokenizer:
             self._token = self._token[1:-1]
         self.skip_comment_whitespaces()
 
-    def skip_comment_whitespaces(self):
+    def skip_comment_whitespaces(self) -> None:
         """
         The program progresses the position pointer for the input so it doesn't read comments or whitespaces.
         The regex matches all whitespaces and comments up to the index where somthing else appears,
         then progresses position accordingly - group(0) is first match of the pattern.
         """
         # Regex matches all whitespaces and comments up to the index where somthing else appears,
-        comments_whitespaces = re.match(COMMENTS_WHITESPACES_REGEX, self._input[self._position:])
+        comments_whitespaces = match(COMMENTS_WHITESPACES_REGEX, self._input[self._position:])
         # then progresses position accordingly - group(0) is first match of the pattern
         self._position += len(comments_whitespaces.group(0)) if comments_whitespaces else 0
 
@@ -164,13 +164,6 @@ class JackTokenizer:
         """
         return self._token_type
 
-    def token_output_xml(self) -> str:
-        """
-        Returns:
-            str: the type of the current token in proper xml format, can be
-            "keyword", "symbol", "identifier", "integerConst", "stringConst"
-        """
-        return f"<{self._token_type}> {self._token} </{self._token_type}>"
 
     def token(self) -> str:
         """

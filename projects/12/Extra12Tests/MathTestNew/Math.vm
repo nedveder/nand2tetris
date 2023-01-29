@@ -241,7 +241,7 @@ return
 label IF_FALSE4
 push local 1
 return
-function Math.sqrt 5
+function Math.sqrt 8
 push constant 0
 pop local 0
 push constant 7
@@ -264,25 +264,58 @@ pop local 4
 push constant 0
 pop local 3
 push constant 0
-pop local 2
-label WHILE_EXP1
-push local 2
+pop local 5
 push local 4
+pop local 6
+push local 4
+pop local 7
+push constant 0
+pop local 2
+push local 4
+push argument 0
+lt
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+label WHILE_EXP1
+push local 6
+push constant 0
 gt
 not
-not
 if-goto WHILE_END1
-push local 3
-push local 2
-shiftleft
+push local 6
 push constant 1
-sub
-add
-pop local 3
+and
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+label WHILE_EXP2
+push local 2
+push local 5
+lt
+not
+if-goto WHILE_END2
+push local 7
+shiftleft
+pop local 7
 push local 2
 push constant 1
 add
 pop local 2
+goto WHILE_EXP2
+label WHILE_END2
+push local 3
+push local 7
+add
+pop local 3
+label IF_FALSE1
+push local 5
+push constant 1
+add
+pop local 5
+push local 6
+shiftright
+pop local 6
 goto WHILE_EXP1
 label WHILE_END1
 push local 3
@@ -293,17 +326,12 @@ push local 3
 push constant 0
 gt
 and
-if-goto IF_TRUE0
-goto IF_FALSE0
-label IF_TRUE0
-push local 0
-push local 1
-push static 0
-add
-pop pointer 1
-push that 0
-add
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push local 4
 pop local 0
+label IF_FALSE2
 label IF_FALSE0
 push local 1
 push constant 1

@@ -7,10 +7,10 @@ Unported [License](https://creativecommons.org/licenses/by-nc-sa/3.0/).
 """
 import typing
 
-VAR = "var"
-ARG = "argument"
-FIELD = "field"
-STATIC = "static"
+VAR:str = "var"
+ARG:str = "argument"
+FIELD:str = "field"
+STATIC:str = "static"
 
 
 class SymbolTable:
@@ -21,9 +21,9 @@ class SymbolTable:
 
     def __init__(self) -> None:
         """Creates a new empty symbol table."""
-        self._class_symbol_table = dict()
-        self._subroutine_symbol_table = dict()
-        self._identifier_counter = {STATIC: 0, FIELD: 0, ARG: 0, VAR: 0}
+        self._class_symbol_table:dict = dict()
+        self._subroutine_symbol_table:dict = dict()
+        self._identifier_counter: dict[str, int] = {STATIC: 0, FIELD: 0, ARG: 0, VAR: 0}
 
     def start_subroutine(self) -> None:
         """Starts a new subroutine scope (i.e., resets the subroutine's 

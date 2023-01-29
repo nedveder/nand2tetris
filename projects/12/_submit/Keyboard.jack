@@ -11,7 +11,7 @@
     static int keyboard;
     /** Initializes the keyboard. */
     function void init() {
-        let keyboard = 24576;
+        let keyboard = 24576; // Memory location of keyboard memory map
         return;
     } 
 
@@ -36,7 +36,7 @@
      * F1 - F12 = 141 - 152
      */
     function char keyPressed() {
-        // Uses Memory.peek
+        // Uses Memory.peek to get data from keyboard memory map
         return Memory.peek(keyboard);
     }
 
@@ -56,12 +56,12 @@
         // 6. advance the cursor
         // 7. return c
         var char key;
-        do Output.printChar(0);
-        while(Keyboard.keyPressed()=0) {}
-        let key = Keyboard.keyPressed();
-        while(~(Keyboard.keyPressed()=0)) {}
-        do Output.backSpace();
-        do Output.printChar(key);
+        do Output.printChar(0); // print cursor 
+        while(Keyboard.keyPressed()=0) {} // wait till a key is pressed
+        let key = Keyboard.keyPressed(); // assign key to key
+        while(~(Keyboard.keyPressed()=0)) {} // wait till key is unpressed
+        do Output.backSpace(); // remove cursor
+        do Output.printChar(key); // print key
         return key;
     }
 
@@ -91,7 +91,7 @@
         var String str;
         var char c;
         do Output.printString(message);
-        let str = String.new(64);
+        let str = String.new(64); // 64 is maximum line length
         while (true) {
             let c = Keyboard.readChar();
             if (c = String.newLine()) {

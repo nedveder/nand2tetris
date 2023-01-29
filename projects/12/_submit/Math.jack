@@ -65,15 +65,66 @@
             let sign = -sign;
             let y = -y;
         }
-        let shiftedX = x;
-        while (i < 15) {
-
-            if((y & bitMap[i]) = bitMap[i]) {
-                let sum = sum + shiftedX;
-            }
-            let shiftedX = ^shiftedX;
-            let i = i+1;
+        if((y & 1) = 1) {
+            let sum = sum + x;
         }
+        let x = ^x;
+        if((y & 2) =2) {
+            let sum = sum + x;
+        }
+        let x = ^x;
+        if((y & 4) = 4) {
+            let sum = sum + x;
+        }
+        let x = ^x;
+        if((y & 8) = 8) {
+            let sum = sum + x;
+        }
+        let x = ^x;
+        if((y & 16) = 16) {
+            let sum = sum + x;
+        }
+        let x = ^x;
+        if((y & 32) = 32) {
+            let sum = sum + x;
+        }
+        let x = ^x;
+        if((y & 64) = 64) {
+            let sum = sum + x;
+        }
+        let x = ^x;
+        if((y & 128) =128) {
+            let sum = sum + x;
+        }
+        let x = ^x;
+        if((y &256) =256) {
+            let sum = sum + x;
+        }
+        let x = ^x;
+        if((y &512) =512) {
+            let sum = sum + x;
+        }
+        let x = ^x;
+        if((y &1024) =1024) {
+            let sum = sum + x;
+        }
+        let x = ^x;
+        if((y &2048) =2048) {
+            let sum = sum + x;
+        }
+        let x = ^x;
+        if((y &4096) =4096) {
+            let sum = sum + x;
+        }
+        let x = ^x;
+        if((y &8192) =8192) {
+            let sum = sum + x;
+        }
+        let x = ^x;
+        if((y &16384) =16384) {
+            let sum = sum + x;
+        }
+        
         if (sign < 0) {
             return -sum;
         }
@@ -134,28 +185,35 @@
         return q;
     }
 
-
     /** Returns the integer part of the square root of x. */
     function int sqrt(int x) {
         // This should be implemented without using multiplication or division.
         // Pseudocode (where '**' is the mathematical power function):
         // 1. let y = 0
         // 2. for j = (n/2 - 1) ... 0 do
-        // 3.   if ((y + 2*j)2 <= x) then let y = y + 2*j
+        // 3.   if ((y + 2*j)**2 <= x) then let y = y + 2*j
         // 4. return y
-        var int y,j,i,square,toSquare;
+        var int y,j,i,square,toSquare,power,temp,toAdd;
         let y = 0;
         let j = 7;
         while (~(j<0)) {
-            let toSquare=y+bitMap[j];
-            let square=0;
-            let i=0;
-            while(~(i>toSquare)){
-                let square=square+((^i)-1);
-                let i=i+1;
+
+            let toSquare = y+bitMap[j];
+            let square = 0;
+            let power = 0;
+            let temp = toSquare;
+            let toAdd = toSquare;
+            while (temp>0) {
+                if (temp & 1) {
+                    let square = square+toAdd;
+                }
+                let toAdd=^toAdd;
+                let power = power+1;
+                let temp = #temp;
             }
+
             if(~(square > x) & (square > 0)) {
-                let y = y + bitMap[j];
+                let y = toSquare;
             }
             let j = j-1;
         }

@@ -93,7 +93,7 @@ class Screen {
         // The case where y1 == y2 can be implemented efficiently by
         // trying to draw as many pixels as possible in a single assignment,
         // similarly to Fill in project 4.
-        var int x,y,a,b,diff,dx,dy, da, db;
+        var int a,b,diff,dx,dy, da, db;
         var int addressFirst,addressLast, first,last, bytes,bitFirst,bitLast,i,tmp;
         if ((x1 = x2) & (y1 = y2)) {
             do Screen.drawPixel(x1,y1);
@@ -112,52 +112,53 @@ class Screen {
             let last = screen[addressLast];
             let bytes = (####x2)-(####x1); //number of bytes to paint
 
+            let bitFirst = ~(bitMap[((x1)&15)]-1); //set first block indent
+            let bitLast = (bitMap[((x2+1)&15)]-1); //set last block indent
+
             if((x1&15)=0){
                 let bitFirst = -1;//~(bitMap[15]-1); //set first block indent
             }
-            else{
-                let bitFirst = ~(bitMap[((x1)&15)]-1); //set first block indent
-            }
             if((x2&15)=15){
                 let bitLast = -1;//(bitMap[15]-1); //set last block indent
-            }
-            else{
-                let bitLast = (bitMap[((x2+1)&15)]-1); //set last block indent
             }
 
             if(bytes=0){
                 let screen[addressFirst]=(((~(bitFirst&bitLast)) & first)&(color = white))
                                         |(((bitFirst&bitLast) | first)&(~(color = white))); 
-                
                 return;
             }
             let i=1;
-            let screen[addressFirst]=(((~bitFirst) & first)&(color = white))
-                                    |((bitFirst | first)&(~(color = white)));
             while(i<bytes){
                 let screen[addressFirst+i]=color;
                 let i=i+1;
             }
+            
+            let screen[addressFirst]=(((~bitFirst) & first)&(color = white))
+                                    |((bitFirst | first)&(~(color = white)));
             let screen[addressLast]=(((~bitLast) & last)&(color = white))
                                     |((bitLast | last)&(~(color = white)));
             return;
         }
-        let x = x1; let y = y1;
         let a=0; let b=0;
         let diff=0;
     
         let dx = Math.abs(x1-x2);
         let dy = Math.abs(y1-y2);
-    
-        let da = 1; let db =1;
+        
         if (x1 > x2) {
             let da = -1;
+        }
+        else{
+            let da=1;
         }
         if (y1 > y2) {
             let db = -1;
         }
+        else{
+            let db=1;
+        }
         while (((~(Math.abs(a) > dx))) & ((~(Math.abs(b) > dy)))) {
-            do Screen.drawPixel(x+a, y+b);
+            do Screen.drawPixel(x1+a, y1+b);
             if (diff < 0) {
                 let a=a+da;
                 let diff=diff+dy;

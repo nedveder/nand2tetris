@@ -14,13 +14,15 @@
 class Array {
     /** Constructs a new Array of the given size. */
     function Array new(int size) {
-        var Array arr;
+        var Array arr; // blank variable compiler does the heavylifting dealing with arrays
         let arr=Memory.alloc(size);
+        // return the pointer to a memory location in heap with assigned size of size
         return arr;
     }
 
     /** Disposes this array. */
     method void dispose() {
+        // deallocates the memory assigned to this array
         do Memory.deAlloc(this);
         return;
     }

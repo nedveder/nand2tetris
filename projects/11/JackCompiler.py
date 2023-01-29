@@ -22,8 +22,8 @@ def compile_file(
         input_file (typing.TextIO): the file to compile.
         output_file (typing.TextIO): writes all output to this file.
     """
-    tokenizer = JackTokenizer(input_file)
-    compilation_engine = CompilationEngine(tokenizer, output_file)
+    tokenizer: JackTokenizer = JackTokenizer(input_file)
+    compilation_engine: CompilationEngine = CompilationEngine(tokenizer, output_file)
     tokenizer.advance()  # Advance first step into code
     compilation_engine.compile_class()
 
@@ -36,9 +36,9 @@ if "__main__" == __name__:
     # correct path, using the correct filename.
     if len(sys.argv) != 2:
         sys.exit("Invalid usage, please use: JackCompiler <input path>")
-    argument_path = os.path.abspath(sys.argv[1])
+    argument_path: str = os.path.abspath(sys.argv[1])
     if os.path.isdir(argument_path):
-        files_to_assemble = [
+        files_to_assemble: list[str] = [
             os.path.join(argument_path, filename)
             for filename in os.listdir(argument_path)]
     else:
@@ -47,7 +47,7 @@ if "__main__" == __name__:
         filename, extension = os.path.splitext(input_path)
         if extension.lower() != ".jack":
             continue
-        output_path = filename + ".vm"
+        output_path: str = filename + ".vm"
         with open(input_path, 'r') as input_file, \
                 open(output_path, 'w') as output_file:
             compile_file(input_file, output_file)

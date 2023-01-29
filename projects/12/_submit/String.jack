@@ -61,16 +61,6 @@
         return;
     }
 
-    method int digitValue(int i) {
-        var boolean ge0; // greater equal  0
-        var boolean le9; // less equal 9
-        let ge0 = (48 < str[i]) | (48 = str[i]);
-        let le9 = (str[i] = 57) | (str[i] < 57);
-        if (ge0 & le9) {
-            return str[i]-48; // return digit value
-        }
-        return -1;
-    }
 
     function char charValue(int val) {
         return 48+val;
@@ -85,7 +75,7 @@
         // 3.   let d = integer value of str.charAt(i)
         // 4.   let val = (val*10) + d
         // 5. return val
-        var int val, i, digit;
+        var int val, i;
         var boolean neg;
         let val = 0;
         let i = 0;
@@ -95,11 +85,9 @@
             let neg = true;
             let i= i+1;
         }
-        let digit = digitValue(i);
-        while((i < length) & (digit > -1)) {
-            let val = val*10 + digit;
+        while(~((~(i < length)) | (48 > str[i]) | (str[i] > 57))) {
+            let val = val*10 + (str[i]-48);
             let i = i+1;
-            let digit = digitValue(i);
         }
         if (neg) {
             return -val;
@@ -107,17 +95,29 @@
         return val;
     }
 
-    function int modulu10(int num) {
-        var int r;
-        let r = num;
-        while (~(r < 10)) {
-            let r = r - 10;
+    function int modulu10(int a) {
+        /* a mod 10 = (a mod 2) + 2*(a/2 mod 5) */
+        var int b;
+        let b = a & 1;           /* b = a mod 2 */
+        let a = #a;			  /* a = a / 2   */
+        /* a mod 5 */
+        let a = (########a) + (a & 255);    /* sum base 2**8 digits */
+        let a = (####a) + (a & 15);    /* sum base 2**4 digits */
+        let a = (####a) + (a & 15);    /* sum base 2**4 digits */
+        if (a > 14) {
+            let a = a - 15;
         }
-        return r;
+        if (a > 4) { 
+            let a = a - 5;
+        }
+        if (a > 4) { 
+            let a = a - 5;
+        }
+        return b + (^a);
     }
 
     method void int2String(int val) {
-        var int lastDigit;
+        var int lastDigit,q;
         var char c;
         let lastDigit = String.modulu10(val);
         let c = String.charValue(lastDigit);
@@ -125,7 +125,14 @@
             do appendChar(c);
         }
         else {
-            do int2String(val/10);
+            // Quick division by 10
+            let q = #((###val) + val);
+            let q = ###(q + val);
+            let q = #(q + val);
+            let q = ###(q + val);
+            let q = #(q + val);
+            let q = ####(q + val);
+            do int2String(q);
             do appendChar(c);
         }
         return;

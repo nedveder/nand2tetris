@@ -9,76 +9,67 @@ from JackTokenizer import JackTokenizer
 from SymbolTable import SymbolTable
 from VMWriter import VMWriter
 
-NOT = "not"
 
-OPEN_SQUARE_BRACKET = "["
 
-APPEND_CHAR = "String.appendChar"
 
-STRING_NEW = "String.new"
 
-OPEN_ROUND_BRACKET = "("
 
-CONSTANT_KEYWORDS = ["true", "false", "null", "this"]
 
-CONSTANTS = ["integerConstant", "stringConstant"]
+CONSTANT_KEYWORDS: list[str]  = ["true", "false", "null", "this"]
+CONSTANTS: list[str]  = ["integerConstant", "stringConstant"]
 
-ELSE = "else"
 
-SEMICOLON = ";"
-
-NEG = "neg"
-
-THAT = "that"
-
-ADD = "add"
-OPERATORS = {'+': "add", '-': "sub", '*': "call Math.multiply 2", '/': "call Math.divide 2", '&': "and", '|': "or",
+NEG: str  = "neg"
+NOT : str = "not"
+ADD : str = "add"
+OPERATORS: dict[str, str] = {'+': "add", '-': "sub", '*': "call Math.multiply 2", '/': "call Math.divide 2", '&': "and", '|': "or",
              '<': "lt", '>': "gt", '=': "eq"}
-UNARY_OPERATORS = {'-': "neg", '~': "not", '^': "shiftleft", '#': "shiftright"}
-CLOSE_ROUND_BRACKET = ")"
+UNARY_OPERATORS: dict[str, str] = {'-': "neg", '~': "not", '^': "shiftleft", '#': "shiftright"}
+CLOSE_ROUND_BRACKET : str = ")"
 
 # Statements
-RETURN_STATEMENT = "return"
-DO_STATEMENT = "do"
-WHILE_STATEMENT = "while"
-IF_STATEMENT = "if"
-LET_STATEMENT = "let"
+RETURN_STATEMENT : str = "return"
+DO_STATEMENT : str = "do"
+WHILE_STATEMENT: str  = "while"
+IF_STATEMENT : str = "if"
+LET_STATEMENT : str = "let"
+ELSE_STATEMENT : str = "else"
 
 # UNCLASSIFIED
-VOID = "void"
-IDENTIFIER = "identifier"
-MEMORY_ALLOC = "Memory.alloc"
-VAR_TYPES = ["int", "char", "boolean"]
-EXP = "expression"
+VOID : str = "void"
+IDENTIFIER: str  = "identifier"
+MEMORY_ALLOC: str  = "Memory.alloc"
+APPEND_CHAR : str = "String.appendChar"
+STRING_NEW: str  = "String.new"
+VAR_TYPES: list[str]  = ["int", "char", "boolean"]
+EXP: str  = "expression"
 
 # SEGMENTS
-CONSTANT = "constant"
-POINTER = "pointer"
-ARG = "argument"
-THIS = "this"
-LOCAL = "local"
-TEMP = "temp"
+CONSTANT: str  = "constant"
+POINTER: str  = "pointer"
+ARG: str  = "argument"
+THIS: str  = "this"
+THAT : str = "that"
+LOCAL: str  = "local"
+TEMP: str  = "temp"
 
 # CLASSIFICATION
-FIELD = "field"
-STATIC = "static"
-VAR = "var"
-CONSTRUCTOR = "constructor"
-FUNCTION = "function"
-METHOD = "method"
-CLASS_METHODS = [CONSTRUCTOR, FUNCTION, METHOD]
-CLASS_VARIABLES = [STATIC, FIELD]
+FIELD: str  = "field"
+STATIC: str  = "static"
+VAR: str  = "var"
+CONSTRUCTOR : str = "constructor"
+FUNCTION : str = "function"
+METHOD: str  = "method"
+CLASS_METHODS: list[str]  = [CONSTRUCTOR, FUNCTION, METHOD]
+CLASS_VARIABLES: list[str]  = [STATIC, FIELD]
 
 # EXTRA CONSTANTS
-COMMA_SEPERATOR = ","
-BACK_SLASH = "/"
-DOT = "."
-
-
-def segment_specifier(var_kind):
-    if var_kind == FIELD:
-        var_kind = THIS
-    return var_kind if var_kind != VAR else LOCAL
+COMMA_SEPERATOR: str  = ","
+BACK_SLASH: str  = "/"
+DOT: str  = "."
+OPEN_SQUARE_BRACKET : str = "["
+OPEN_ROUND_BRACKET: str  = "("
+SEMICOLON : str = ";"
 
 
 class CompilationEngine:
@@ -94,15 +85,21 @@ class CompilationEngine:
         :param input_stream: The input stream.
         :param output_stream: The output stream.
         """
-        self._conditional_suffix = None
-        self._class_name = None
-        self._input = input_stream
-        self._output = VMWriter(output_stream)
-        self._symbol_table = SymbolTable()
+        self._conditional_suffix :dict[str,int]= dict()
+        self._class_name:str = ""
+        self._input: JackTokenizer = input_stream
+        self._output: VMWriter = VMWriter(output_stream)
+        self._symbol_table: SymbolTable = SymbolTable()
         self.reset_condition()
 
-    def reset_condition(self):
+    def reset_condition(self) -> None:
         self._conditional_suffix = {WHILE_STATEMENT: 0, IF_STATEMENT: 0}
+
+    @staticmethod
+    def segment_specifier(var_kind:str)->str:
+        if var_kind == FIELD:
+           var_kind = THIS
+        return var_kind if var_kind != VAR else LOCAL
 
     def compile_class(self) -> None:
         """Compiles a complete class."""
@@ -182,7 +179,7 @@ class CompilationEngine:
             n_args += 1
         return n_args
 
-    def variable_declaration(self, var_kind):
+    def variable_declaration(self, var_kind) -> int:
         """
         Args:
             var_kind: kind of variable to add into symbol table
@@ -233,12 +230,12 @@ class CompilationEngine:
         self._output.write_pop(TEMP, 0)
         self._input.advance()  # ;
 
-    def compile_subroutine_call(self, first_name, second_name):
+    def compile_subroutine_call(self, first_name, second_name) -> None:
         n_args = 0
         # Push correct data for methods
         if self._symbol_table.contains(first_name):
             var_index = self._symbol_table.index_of(first_name)
-            var_kind = segment_specifier(self._symbol_table.kind_of(first_name))
+            var_kind = self.segment_specifier(self._symbol_table.kind_of(first_name))
             self._output.write_push(var_kind, var_index)
             n_args += 1
             first_name = self._symbol_table.type_of(first_name)
@@ -259,7 +256,7 @@ class CompilationEngine:
         var_name = self._input.token()
         self._input.advance()  # varName
         var_index = self._symbol_table.index_of(var_name)
-        var_kind = segment_specifier(self._symbol_table.kind_of(var_name))
+        var_kind = self.segment_specifier(self._symbol_table.kind_of(var_name))
         is_array = self._input.token() == OPEN_SQUARE_BRACKET
         if is_array:
             self.compile_array(var_index, var_kind)
@@ -277,7 +274,7 @@ class CompilationEngine:
             self._input.advance()  # ;
 
     def compile_array(self, var_index, var_kind):
-        var_kind = segment_specifier(var_kind)
+        var_kind = self.segment_specifier(var_kind)
         self._input.advance()  # [ bracket
         self.compile_expression()
         self._output.write_push(var_kind, var_index)
@@ -328,7 +325,7 @@ class CompilationEngine:
         self._input.advance()  # open bracket
         self.compile_statements()
         self._input.advance()  # close bracket
-        if self._input.token() == ELSE:
+        if self._input.token() == ELSE_STATEMENT:
             self._output.write_goto(end_label)
             self._output.write_label(else_label)
             self._input.advance()  # else
@@ -384,7 +381,7 @@ class CompilationEngine:
 
             else:  # is a variable
                 var_index = self._symbol_table.index_of(first_name)
-                var_kind = segment_specifier(self._symbol_table.kind_of(first_name))
+                var_kind = self.segment_specifier(self._symbol_table.kind_of(first_name))
                 self._output.write_push(var_kind, var_index)
 
         elif self._input.token() in UNARY_OPERATORS:

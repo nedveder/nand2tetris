@@ -194,7 +194,7 @@
         var Array map;
         var int i, row,address,cur;
         let map = Output.getMap(c);
-        let address=16384 + (352 *cursorY) + (#cursorX);
+        let address=16384 + ((^^^^^^^^^cursorY)-(^^^^^^^cursorY)-(^^^^^cursorY)) + (#cursorX);
         let i = 0;
         while (i < 11) {
             let row = map[i];
