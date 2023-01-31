@@ -198,13 +198,13 @@
         let i = 0;
         while (i < 11) {
             let row = map[i];
-            let cur=Memory.peek(address);
+            let cur=address[0];
             // Checks whether cursorX is even or odd 
             if(cursorX=1|((#cursorX)=(#(cursorX-1)))){
-                do Memory.poke(address,(^^^^^^^^(row))|(255&cur));
+                let address[0]=(^^^^^^^^(row))|(255&cur);
             }
             else{
-                do Memory.poke(address,row|(-256&cur));
+                let address[0]=row|(-256&cur);
             }
             let i = i + 1;
             let address=address+32;

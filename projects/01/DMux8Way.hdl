@@ -16,12 +16,7 @@ CHIP DMux8Way {
     OUT a, b, c, d, e, f, g, h;
 
     PARTS:
-    Nand(a=in, b=sel[2], out=sB);
-    Not(in=sB, out=SwitchB);
-    Nand(a=sB, b=in, out=sA);
-    Not(in=sA, out=SwitchA);
-
-
+    DMux(in=in, sel=sel[2], a=SwitchA, b=SwitchB);
     DMux4Way(in=SwitchA, sel=sel[0..1], a=a, b=b, c=c, d=d);
     DMux4Way(in=SwitchB, sel=sel[0..1], a=e, b=f, c=g, d=h);
 }

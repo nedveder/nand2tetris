@@ -46,7 +46,6 @@ class CodeWriter:
         code += ["// JEQ COMP INIT", "@R13", "M=D", "@SP", "AM=M-1", "D=M", "A=A-1", "D=M-D", "M=0", "@END_EQ", "D;JNE", "@SP", "A=M-1", "M=-1", "(END_EQ)", "@R13", "A=M", "0;JMP",
                  "// JGT COMP INIT", "@R13", "M=D", "@SP", "AM=M-1", "D=M", "@GT_FIRST", "M=D", "@GT_FIRST_POS", "D;JGE", "@GT_FIRST_NEG", "0;JMP", "(GT_FIRST_POS)", "@SP", "A=M-1", "D=M", "@GT_SECOND", "M=D", "@GT_FALSE", "D;JLT", "@GT_SAME_SIGN", "0;JMP", "(GT_FIRST_NEG)", "@SP", "A=M-1", "D=M", "@GT_SECOND", "M=D", "@GT_TRUE", "D;JGT", "@GT_SAME_SIGN", "0;JMP", "(GT_SAME_SIGN)", "@GT_FIRST", "D=M", "@GT_SECOND", "D=M-D", "@GT_TRUE", "D;JGT", "@GT_FALSE", "0;JMP", "(GT_TRUE)", "@SP", "A=M-1", "M=-1", "@GT_END", "0;JMP", "(GT_FALSE)", "@SP", "A=M-1", "M=0", "(GT_END)", "@R13", "A=M", "0;JMP",
                  "// JLT COMP INIT", "@R13", "M=D", "@SP", "AM=M-1", "D=M", "@LT_FIRST", "M=D", "@LT_FIRST_POS", "D;JGE", "@LT_FIRST_NEG", "0;JMP", "(LT_FIRST_POS)", "@SP", "A=M-1", "D=M", "@LT_SECOND", "M=D", "@LT_TRUE", "D;JLT", "@LT_SAME_SIGN", "0;JMP", "(LT_FIRST_NEG)", "@SP", "A=M-1", "D=M", "@LT_SECOND", "M=D", "@LT_FALSE", "D;JGT", "@LT_SAME_SIGN", "0;JMP", "(LT_SAME_SIGN)", "@LT_FIRST", "D=M", "@LT_SECOND", "D=M-D", "@LT_TRUE", "D;JLT", "@LT_FALSE", "0;JMP", "(LT_TRUE)", "@SP", "A=M-1", "M=-1", "@LT_END", "0;JMP", "(LT_FALSE)", "@SP", "A=M-1", "M=0", "(LT_END)", "@R13", "A=M", "0;JMP"]
-        self.write_code(code)
         # call Sys.init
         code+= [f"// CALL Sys.init"]
         # Push SP into stack
@@ -113,6 +112,7 @@ class CodeWriter:
             ["neg", "not", "shiftleft", "shiftright"] else ["A=A-1", self.code_dict[command]]
         self.write_code(code)
 
+
     def write_push_pop(self, command: str, segment: str, index: int) -> None:
         """Writes assembly code that is the translation of the given
         command, where command is either C_PUSH or C_POP.
@@ -122,31 +122,31 @@ class CodeWriter:
             segment (str): the memory segment to operate on.
             index (int): the index in the memory segment.
         """
-        # Your code goes here!
-        # Note: each reference to static i appearing in the file Xxx.vm should
-        # be translated to the assembly symbol "Xxx.i". In the subsequent
-        # assembly process, the Hack assembler will allocate these symbolic
-        # variables to the RAM, starting at address 16.
-        memory_segments: dict[str, list[str]] = {"local": ["@1", "D=M", f"@{index}", "A=A+D"],
-                           "argument": ["@2", "D=M", f"@{index}", "A=A+D"],
-                           "this": ["@3", "D=M", f"@{index}", "A=A+D"],
-                           "that": ["@4", "D=M", f"@{index}", "A=A+D"],
-                           "constant": [f"@{index}"],
-                           "temp": [f"@{5+index}"],
-                           "static": [f"@{self._file_name}.{index}"],
-                           "pointer": [f"@{3+index}"]}
-        code: list[str] = [f"//PUSH/POP {command} segment:{segment} index:{index}"]
-        code += memory_segments[segment]+["D=A", "@R14", "M=D"]
-        if command == "C_PUSH":
-            reg: list[str] = ["D=M"] if segment == "constant" else ["A=M", "D=M"]
-            code += ["@R14"]+reg
-            code += STACK_PUSH
-        elif command == "C_POP":
-            code += STACK_POP
-            code += ["@R14",
-                     "A=M",
-                     "M=D"]
+        code=[]
+        segments=["local","argument","this","that"]
+        if command=="C_PUSH":
+            if segment in segments:
+                code+=[f"@{index}", "D=A",f"@{segments.index(segment)+1}", "A=M+D", "D=M"]
+            elif segment=="constant":
+                code+=[f"@{index}", "D=A"]
+            elif segment=="temp":
+                code+=[f"@{index+5}", "D=M"]
+            elif segment=="static":
+                code+=[f"@{self._file_name}.{index}", "D=M"]
+            elif segment=="pointer":
+                code+=[f"@{4 if index else 3}", "D=M"]
+            code+=STACK_PUSH
+        if command=="C_POP":
+            if segment in segments:
+                code+=[f"@{index}","D=A",f"@{segments.index(segment)+1}","D=D+M","@SP","AM=M-1","D=D+M","A=D-M","M=D-A"]
+            elif segment=="temp":
+                code+=[f"@{5+index}","D=A","@SP","AM=M-1","D=D+M","A=D-M","M=D-A"]
+            elif segment=="static":
+                code+=["@SP","AM=M-1","D=M",f"@{self._file_name}.{index}", "M=D"]
+            elif segment=="pointer":
+                code+=["@SP","AM=M-1","D=M",f"@{4 if index else 3}", "M=D"]
         self.write_code(code)
+
 
     def write_label(self, label: str) -> None:
         """Writes assembly code that affects the label command.

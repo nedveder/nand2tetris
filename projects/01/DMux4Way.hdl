@@ -16,11 +16,7 @@ CHIP DMux4Way {
     OUT a, b, c, d;
 
     PARTS:
-    Nand(a=in, b=sel[1], out=sB);
-    Not(in=sB, out=SwitchB);
-    Nand(a=in, b=sB, out=sA);
-    Not(in=sA, out=SwitchA);
-
+    DMux(in=in, sel=sel[1], a=SwitchA, b=SwitchB);
     DMux(in=SwitchA, sel=sel[0], a=a, b=b);
     DMux(in=SwitchB, sel=sel[0], a=c, b=d);
 }
